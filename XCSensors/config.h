@@ -9,7 +9,7 @@ www.primalcode.nl
  the Free Software Foundation, either version 3 of the License, or
  any later version. see <http://www.gnu.org/licenses/>
 */
-//Compiler values
+// Compiler values
 // Trinket pro: Pins #2 and #7 are not available (they are exclusively for USB)
 
 //#define DEBUG
@@ -54,7 +54,10 @@ www.primalcode.nl
 #define BTRX_PIN 12 //7  // The serial pins for Bluetooth
 #define BTTX_PIN 11 //8
 
-
+// Due to the abysmally bad standardized method of NMEA sentences, everyone ended up doing their own thing
+// resulsting in a complete an utter disorganized mess. 
+// As a workaround different sentences can be sent to different ports. This way you can implement the
+// proprietary drivers for the different sensors (LXNAV for the vario and Vega for the humid sensor)
 #define CHANNEL1PORT 4353  //udp ports for the designated channels
 #define CHANNEL2PORT 10110
 #define CHANNEL3PORT 4352

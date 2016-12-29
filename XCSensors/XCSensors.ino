@@ -1,5 +1,4 @@
 
-
 /*
 XCsensors by Marco van Zoest
 
@@ -29,7 +28,6 @@ www.primalcode.nl
 #include "SubFunctions.h"
 #include "Average.h"
 #include "SendData.h"
-
 
 //----------------------------------------------------------------------------//
 // Loadable Config Variables
@@ -133,9 +131,7 @@ void collectNmea6(){
       nmea.setPTAS1(cv,av,altitudeF);
       sendPTAS1();      
    }
-   
-   
-   
+ 
    if (abs(vario) > 0 && abs(vario) < conf.varioDeadBand/1000) {
     vario = 0;
    }        
@@ -246,7 +242,6 @@ void sendSensorData() {
      #endif
    
     sendNmeaAll(); //Send the DATA for all sensors, the vario is leading (except for gps)
-
     
 }
 
@@ -289,7 +284,6 @@ void readVarioPressure(){
       break;
  }
  
-
  #endif
  //nmea_varioPressRaw.push(pressure); 
   realPressureAv = (conf.variosmooth * realPressureAv + pressure) / (conf.variosmooth +1);
@@ -379,11 +373,8 @@ void loop() {
    }
   #endif       
    
-
-
    if (startwait && runloop) {  //Give the sensors time to warm up
-      
-     
+          
       timedNmea6.check();
 
       #if defined(VARIO) 

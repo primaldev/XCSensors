@@ -162,7 +162,6 @@ bool getBoolFromVal(char *sval) {
 }
 
 
-
 void setConf(int varname, char *value) {
 
   switch (varname) {
@@ -195,7 +194,6 @@ void setConf(int varname, char *value) {
     case 200: runloop=false; break; //stop 
     case 201: runloop=true; break; //start
     default:
-    
      
      getConfigVars(serialBT);
     break;
