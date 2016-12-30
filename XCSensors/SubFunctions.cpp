@@ -1,6 +1,3 @@
-
-
-
 /*
 XCsensors by Marco van Zoest
 
@@ -23,7 +20,6 @@ byte state=0;
 
 #if defined(BUZZER)
 
- 
   unsigned long ttime = 0;
   bool toneon=true;
   bool playtone=false;
@@ -33,8 +29,7 @@ byte state=0;
   float testvario=0;
 #endif
 //
-//Function borrowed from:
-//GPS Portal, part of Tardis Time Server by: M. Ray Burnette
+
 void GPSstuff(char c) {                                         // GPSbuffer[] is global
   static int i, j;                                              //   persistent within function scope
   static char q;
@@ -42,8 +37,7 @@ void GPSstuff(char c) {                                         // GPSbuffer[] i
   static char GPSbuffer[120];                                   // GPS serial line input buffer
   bool startSen = false;                                      // Start of NMEA Code
   bool endSen = false;                                        // End NMEA Code
-  String nmeaCode;
-
+  String nmeaCode;   
   q = c;
 
   if ( q == 0x24 )                                              // '$'
@@ -56,15 +50,16 @@ void GPSstuff(char c) {                                         // GPSbuffer[] i
   
   if (q == 0x0d) {
     flag = true;                                                // is the character a CR for eol
+    GPSbuffer[i++] = '\0';
     i = 0;
   }
   
   if (flag) {                                                   // test for end of line and if the right GPSbuffer
-    flag = false;                                               // reset for next time
-
-     sendData(GPSbuffer, conf.GPSChannel); //TODO need testing
- 
-    
+    flag = false;                                               // reset for next time    
+     sendData(GPSbuffer, conf.GPSChannel); //TODO need testing     
+     for (j = 0; j < 120 ; j++) {
+        GPSbuffer[j]=0;
+     } 
   }
 
 }
@@ -200,8 +195,6 @@ void sendNmeaAll() {
 }
 
 #if defined(BUZZER)
-
-
 void makeSound(float vario){
   int pulse;
 
@@ -267,14 +260,9 @@ void makeSound(float vario){
           ttime = millis() + 50;
          
         }
-    } 
-
-   
+    }    
     
 }
-
-
-
 
 #endif
 

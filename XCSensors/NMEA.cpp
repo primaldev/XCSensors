@@ -57,15 +57,15 @@ void NMEA::setMagneticHeading(float magneticHeading){
 
 void NMEA::setGforce(float gforce){ //$FBG does not exist, unable to find a gforce NMEA sentence
 
-  /*
-   * $FBG,0,*hh/CR/LF 
+  /* Haven't found a NMEA sentence for G-Force. This one is made up.
+   * $XCSG,0,*hh/CR/LF  
    *
    * Field Number:
    *  1) G-Force
    *  2) Checksum
    */
   
-  char t_NmeaAgforce[19]= "$FGMG,";
+  char t_NmeaAgforce[19]= "$XCSG,";
   char t_gforce[5];
   char t_check[3];
   char t_tail[2] = ",";
@@ -94,7 +94,7 @@ void NMEA::setPTAS1(float cv, float av, long altitudeF){
   char t_cv[7];
   char t_altitudeF[10];
   char t_check[3];
-  char t_tail[4] = ",0,"; //including tas
+  char t_tail[3] = ",,"; //including tas
   char t_comma[2]=",";
 
    dtostrf(cv,3,2, t_cv);

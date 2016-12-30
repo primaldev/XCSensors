@@ -19,8 +19,6 @@ void sendAccelerometor();
 float getCalcHeading();
 void meansensors();
 
-
-
 #if defined(BUZZER) 
 void makeSound(float vario); 
 void makeSoundp(int32_t tpressure);

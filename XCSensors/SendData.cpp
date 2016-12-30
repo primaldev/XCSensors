@@ -23,12 +23,8 @@ void setEPSPort(int id, int port) {
    serialEPS.print(id);
    serialEPS.print(F(",\"UDP\",\"255.255.255.255\","));
    serialEPS.println(port);
-   delay(500);
-   
-  
+   delay(500); 
 }
-
-
 
 void startESPSoftAP(){
   serialEPS.println(F("+++AT+RST"));
@@ -43,7 +39,6 @@ void startESPSoftAP(){
   serialEPS.print(conf.password);
   serialEPS.println(F("\",5,3"));  
   delay(500);
-
 }
 
 void setEPSMulti(){ 
@@ -54,10 +49,7 @@ void setEPSMulti(){
   setEPSPort(1, CHANNEL1PORT);
   setEPSPort(2, CHANNEL2PORT);
   setEPSPort(3, CHANNEL3PORT);
-  setEPSPort(4, CHANNEL4PORT);
-  
-
- 
+  setEPSPort(4, CHANNEL4PORT); 
 }
 
 void setESPBroadCast(){  
@@ -67,9 +59,7 @@ void setESPBroadCast(){
   delay(500); 
   serialEPS.println(F("AT+CIPMODE=1"));
   delay(500); 
-  serialEPS.println(F("AT+CIPSEND"));
-   
-  
+  serialEPS.println(F("AT+CIPSEND"));  
 }
 
 void setSendData(){ 

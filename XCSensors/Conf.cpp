@@ -42,7 +42,7 @@ void setDefaultConfig(){
      conf.GPSChannel = 1;
      conf.varioChannel = 2;
      conf.humidChannel = 3;
-     conf.magChannel = 4; 
+     conf.magChannel = 1; 
      conf.AcclChannel = 4;
      strcpy(conf.ssid,"XcSensors");
      strcpy(conf.password,"thereisnospoon");

@@ -146,7 +146,7 @@ void collectNmea6(){
     vectoraz = (sqrt(pow(aax,2) + pow(aay,2) + pow(aaz,2))) - 1;    
     
    #endif   
-   #if !defined(GPS) 
+   #if !defined(GPSTIMER) 
       
      vi++;
      if (vi > 5) { // 6 samples collected
@@ -159,20 +159,15 @@ void collectNmea6(){
    
   
 }
-
+#if defined(ACCL)
 void readACCLSensor() {
-   #if defined(ACCL)
-            accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-   #endif
-            
+  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 }
 
 void resetACCLcompVal() {
-  #if defined(ACCL)
   conf.accloffset = -(vectoraz/2048 )*1000;
-  #endif
 }
-
+#endif
 
 void initSensors(){
 
@@ -203,16 +198,20 @@ void initSensors(){
 void serialEvent() { //Builtin Arduino Function
   
   ledOn();  //Led On
-  gi++;
+  
   while (Serial.available()) {
     char inChar = (char)Serial.read();
     GPSstuff(inChar); 
   }
 
+  #if defined(GPSTIMER)
+  gi++;
   if (gi>3) { //GPS normally sends 4 sentences
+     
      sendSensorData();
      gi=0;
   } 
+  #endif
   ledOff(); //Led Off
   
   
@@ -221,17 +220,14 @@ void serialEvent() { //Builtin Arduino Function
 
 void sendSensorData() {
     varioAv = nmea_varioave.mean();
- 
+  
     if (conf.lxnav) {      
       nmea.setnmeaVarioLXWP0(previousAltitude,nmea_varioave.get(0),nmea_varioave.get(1),nmea_varioave.get(2),nmea_varioave.get(3),nmea_varioave.get(4),nmea_varioave.get(5),getCalcHeading()); //need to gather 6 samples    
-      nmea.setNmeaVarioSentence(realPressureAv,previousAltitude,varioAv,baro.getTemperature(),vRef.readVcc());
+      float volt = vRef.readVcc();     
+      nmea.setNmeaVarioSentence(realPressureAv,previousAltitude,varioAv,baro.getTemperature(),volt/1000);
     }
     #if defined (ACCL)
-    #if defined (ACCLRAW) 
-     nmea.setGforce(nmea_acclavez.mean());
-    #else
      nmea.setGforce((vectoraz /2048) + (conf.accloffset/1000) );
-    #endif
     #endif 
      
      #if defined (DHT11) 
@@ -306,7 +302,7 @@ void runOnce(){
 
 void setup() {
   Wire.setClock(400000UL);
-   Serial.begin(SERIAL); //for the gps
+   Serial.begin(GPSSERIAL); //for the gps
    Wire.begin();
    
   #if defined(EPSWIFI)
@@ -319,8 +315,7 @@ void setup() {
     serialEPS.begin(EPSWIFIBAUD); //need for speed
   #endif
   
-  #if defined(SERIALBT)
- 
+  #if defined(SERIALBT) 
     serialBT.begin(SERIALBTBAUD); 
   #endif
   
@@ -339,7 +334,7 @@ void setup() {
   } 
 
   ledOff(); //If the led stays on, the sensors failed to init
-  vRef.begin();
+   vRef.begin(VREFCAL);
   
 }
 

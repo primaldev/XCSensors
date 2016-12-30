@@ -14,21 +14,18 @@ www.primalcode.nl
 
 //#define DEBUG
 #define GPS
+#define GPSTIMER //Use GPS pulse to send data. 
+#define GPSSERIAL 9600 //GPS serial speed
 
-
-#define SERIAL 115200
 #define VARIO 
 #define VARIO2 //if 2nd vario
 #define VARIOREADMS 40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
 #define BAROADDR 0x77
 #define BAROADDR2 0x76
 
-
-
 #define EPSWIFI
 #define EPSAT  //use AT commands
 #define EPSWIFIBAUD 115200 //Softserial of the ESP8266 can't handle high baud rates
-
 
 #define WIFIRX_PIN 10//2 //ESP8266 PIn
 #define WIFITX_PIN 9//3
@@ -58,13 +55,15 @@ www.primalcode.nl
 // resulsting in a complete an utter disorganized mess. 
 // As a workaround different sentences can be sent to different ports. This way you can implement the
 // proprietary drivers for the different sensors (LXNAV for the vario and Vega for the humid sensor)
+// The passthrough option in XCSoar does not work so well.
 #define CHANNEL1PORT 4353  //udp ports for the designated channels
 #define CHANNEL2PORT 10110
 #define CHANNEL3PORT 4352
-#define CHANNEL4PORT 2000
+#define CHANNEL4PORT 2000 //depending on esp firmware, the 4rth channel might not be available
 
 #define ACCLSMOOTH 7 //TODO: change to lowpass filter
 
+#define VREFCAL 1126400L //Calibration voltage level. see https://github.com/rlogiacco/VoltageReference
 
 #define BUZZER //let's go beep
 #define BUZZPIN 6 //board pin 
