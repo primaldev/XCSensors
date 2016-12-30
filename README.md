@@ -3,14 +3,15 @@ XCSensors is an Arduino based vario. It provides telemetry data to any vario bas
 
 ### Features:
 
-Wifi streaming for e-ink reader.
-Bluetooth streaming.
-Configuration via Bluetooth
-Dual pressure sensor support
-Humidity sensor
-Gyro compass
-Accelerometer
-Piezo speaker for vario audio
+Wifi streaming for e-ink reader. <br>
+Bluetooth streaming.<br>
+Configuration via Bluetooth <br>
+Dual pressure sensor support <br>
+Humidity sensor <br>
+Gyro compass <br>
+Accelerometer <br>
+Piezo speaker for vario audio <br>
+GPS (neo6) <br>
 
 Not all sensors are needed and can be omitted via de config.h macro definition.
 
