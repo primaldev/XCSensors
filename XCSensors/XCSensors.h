@@ -24,16 +24,21 @@ void collectNmea6();
 void readVarioPressure();
 void readACCLSensor();
 
-//extern int16_t ax, ay, az;
-//extern int16_t gx, gy, gz;
-
 extern int16_t mx, my, mz;
 extern bool runloop;
 extern NMEA nmea;
+//#if defined(DHT)
 extern dht dhts;
+//#endif
 extern SoftwareSerial serialEPS;
+
+
+#if defined(SERIAL1OUTONLY)     
+extern HardwareSerial &serialBT;
+#else
 extern SoftwareSerial serialBT;
-//extern MPU6050 accelgyro;
+#endif 
+
 
 
 

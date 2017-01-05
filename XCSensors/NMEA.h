@@ -28,7 +28,7 @@ public:
  char nmeaPTAS1[32];
 private:
  
-  byte getCRC(char *buff);
+  void getCRC(char *buff);
   
   
 };

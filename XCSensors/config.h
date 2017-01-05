@@ -9,13 +9,44 @@ www.primalcode.nl
  the Free Software Foundation, either version 3 of the License, or
  any later version. see <http://www.gnu.org/licenses/>
 */
+
+/*
+
+Config 1: 
+GPS -> HW Serial
+BT -> SerialBT
+ESP8266 -> SerialEPS
+Config options always via BT and with bluetoothOnly disabled in the config options, data will go via Wifi
+
+Config 2:
+GPS -> HW Serial
+BT -> SerialBT
+No wifi, data and config options via Bluetooth
+
+Config 3:
+GPS -> HW Serial
+Kobo serial -> SerialBT
+No wifi, data and config options via SerialBT  direct connection to Kobo serial port
+
+Config 4:
+GPS -> Kobo Serial port 1
+Kobo Serial port 2 -> HW Serial
+No wifi, SerialBT disabled. Config and data via Pro mini HW Serial port. Kobo with more than one serial port needed (Kobo glo)
+
+
+
+*/
+
 // Compiler values
 // Trinket pro: Pins #2 and #7 are not available (they are exclusively for USB)
 
 //#define DEBUG
+//#define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. Needs a lot of program space. If disabled,
+                    // multiple values can be sent, handy for programs <1=on> 
+
 #define GPS
 #define GPSTIMER //Use GPS pulse to send data. 
-#define GPSSERIAL 9600 //GPS serial speed
+#define SERIAL1BAUD 9600 // serial1 speed
 
 #define VARIO 
 #define VARIO2 //if 2nd vario
@@ -31,28 +62,28 @@ www.primalcode.nl
 #define WIFITX_PIN 9//3
 #define WIFIEN_PIN 4//3 //wifi channel enable pin
 
-#define DHT11
-#define DHTTYPE DHT11
-#define MAG
+#define DHT
+#define DHTTYPE DHT11   //for the library
+#define MAG //TODO shave memory usage
 #define DHT11_PIN 3
-#define ACCL 
+#define ACCL //TODO shave memory usage
 #define ACCLREADMS 100 //how often to read the accelerom
 
-//Enable Serial Bluetooth
-#define SERIALBT
+//Enable Serial Bluetooth 
+//SerialBT can also be used to connect to a Kobo serial port instead of a HC-05, no changes needed
+#define SERIALBT  //output will revert to Serial if disabled (no gps support possible)
 #define SERIALBTBAUD 38400 
 //Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400) 
                             //AT+UART=38400,1,0 //115200 had problems
                             //AT+NAME=iXsensors0A
                             //AT+PSWD=1234
-
-//define SERIALOUT                           
+                 
                
 #define BTRX_PIN 12 //7  // The serial pins for Bluetooth
 #define BTTX_PIN 11 //8
 
 // Due to the abysmally bad standardized method of NMEA sentences, everyone ended up doing their own thing
-// resulsting in a complete an utter disorganized mess. 
+// resulting in a disorganized mess. 
 // As a workaround different sentences can be sent to different ports. This way you can implement the
 // proprietary drivers for the different sensors (LXNAV for the vario and Vega for the humid sensor)
 // The passthrough option in XCSoar does not work so well.
@@ -61,12 +92,22 @@ www.primalcode.nl
 #define CHANNEL3PORT 4352
 #define CHANNEL4PORT 2000 //depending on esp firmware, the 4rth channel might not be available
 
-#define ACCLSMOOTH 7 //TODO: change to lowpass filter
+#define ACCLSMOOTH 7 //Lowpass filter level
 
 #define VREFCAL 1126400L //Calibration voltage level. see https://github.com/rlogiacco/VoltageReference
 
 #define BUZZER //let's go beep
 #define BUZZPIN 6 //board pin 
-//#define TESTBUZZER //simulate the vario sound
+//#define TESTBUZZER //simulate the vario sound for testing only
+
+
+
+
+////////////////////set Fixes/////////////////////////
+
+#if !defined(SERIALBT)
+#define SERIAL1OUTONLY
+#endif
+
 
 

@@ -17,6 +17,7 @@ www.primalcode.nl
 #include "SendData.h"
 
 byte state=0;  
+bool cmd=false;
 
 #if defined(BUZZER)
 
@@ -29,6 +30,8 @@ byte state=0;
   float testvario=0;
 #endif
 //
+
+
 
 void GPSstuff(char c) {                                         // GPSbuffer[] is global
   static int i, j;                                              //   persistent within function scope
@@ -63,6 +66,70 @@ void GPSstuff(char c) {                                         // GPSbuffer[] i
   }
 
 }
+
+#if defined(HUMANCONFIG)
+void getConfVal(char c) {
+    static char Confbuffer[5];
+    static char Valbuffer[50];
+    static int i, j,y;                                            
+    static char q;
+    static bool flag = false;
+    static bool split =false;
+    q = c;
+
+  if (!cmd)                                              // '<'
+  {
+    i = 0;                                                      
+    y = 0;
+    cmd=true;
+  }
+
+  if ( q == 0x3d)                                              // '='
+  {
+    split=true;
+  }
+
+  if (  q == 0x3d || q == 0x0d || q == 0x0a ){
+    
+  }else{
+    if (split) {
+   
+        if ( y < 50) Valbuffer[y++] = q;
+      
+    }else{
+       
+          if ( i < 5) Confbuffer[i++] = q;
+       
+    }
+  }
+  
+  if (q == 0x0d) { // enter
+    flag = true;                                               
+    i = 0;
+    y = 0;
+    cmd = false;
+  }
+   //Serial.print(c);
+  if (flag) {                                                   
+    flag = false;                                               
+    split = false;
+   #if defined(DEBUG)
+      Serial.println(atoi(Confbuffer));
+      Serial.println(Valbuffer);
+   #endif   
+      setConf(atoi(Confbuffer),Valbuffer); 
+       
+     for (j = 0; j < 5 ; j++) {
+        Confbuffer[j]=0;
+     }
+
+     for (j = 0; j < 50 ; j++) {
+        Valbuffer[j]=0;
+     }
+  }
+
+}
+#else
 
 void getConfVal(char c) {
     static char Confbuffer[5];
@@ -123,11 +190,11 @@ void getConfVal(char c) {
   }
 
 }
-
+#endif
 
 
 void sendNmeaDHT(){
-    #if defined(DHT11)      
+    #if defined(DHT)      
     int temp = (dhts.temperature + 273.15) * 10;
     nmea.setNmeaHumidSentence(temp, dhts.humidity);
     sendData(nmea.nmeaHumid,conf.humidChannel);

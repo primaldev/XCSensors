@@ -16,7 +16,7 @@ www.primalcode.nl
 #include "config.h" //All other files must use return values or classes
 #include "Conf.h"
 
-
+#if defined(EPSWIFI)
 
 void setEPSPort(int id, int port) {
    serialEPS.print(F("AT+CIPSTART="));
@@ -62,6 +62,8 @@ void setESPBroadCast(){
   serialEPS.println(F("AT+CIPSEND"));  
 }
 
+#endif
+
 void setSendData(){ 
   if (conf.wifiMultiPort) {
     setEPSMulti();
@@ -81,9 +83,13 @@ int getSize(char* ch){
 
 
 void sendData(char *message, int id) {
+  #if defined(SERIAL1OUTONLY)
+    Serial.println(message);
+  #else
   if(conf.bluetoothOnly) {
     serialBT.println(message); 
   }else{
+    #if defined(EPSAT)
     #if defined(EPSAT)
     if (conf.wifiMultiPort) {      
       int len = getSize(message) + 1; //sizeof might be wrong
@@ -103,6 +109,9 @@ void sendData(char *message, int id) {
       serialEPS.print(message);  
       serialEPS.print(F("\n\r"));
     #endif
+    #endif
   }
+  
+  #endif
 }
 

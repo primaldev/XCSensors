@@ -14,6 +14,7 @@ www.primalcode.nl
 #include "Average.h"
 
 const char *hex = "0123456789ABCDEF";
+char t_check[3];
 
 NMEA::NMEA(){
   
@@ -30,8 +31,7 @@ void NMEA::setMagneticHeading(float magneticHeading){
    */
 
   char t_NmeaMag[19]= "$HCHDM,";
-  char t_mag[6];
-  char t_check[3];
+  char t_mag[6]; 
   char t_tail[4] = ",M,";
 
   dtostrf(magneticHeading,3,1,t_mag);
@@ -39,11 +39,8 @@ void NMEA::setMagneticHeading(float magneticHeading){
   strcat(t_NmeaMag,t_mag );
   strcat(t_NmeaMag,t_tail);
   
-  byte cs = getCRC(t_NmeaMag);
-
-  t_check[0]= hex[(cs>>4)&0xF];
-  t_check[1]= hex[(cs)&0xF];
-  t_check[2] = '\0';
+  getCRC(t_NmeaMag);
+  
   strcat(t_NmeaMag, "\*");
   strcat(t_NmeaMag, t_check);
   
@@ -67,20 +64,16 @@ void NMEA::setGforce(float gforce){ //$FBG does not exist, unable to find a gfor
   
   char t_NmeaAgforce[19]= "$XCSG,";
   char t_gforce[5];
-  char t_check[3];
   char t_tail[2] = ",";
     
   dtostrf(gforce, 1,1,t_gforce);
   strcat(t_NmeaAgforce,t_gforce );
   strcat(t_NmeaAgforce,t_tail);
   
-  byte cs = getCRC(t_NmeaAgforce);
+  getCRC(t_NmeaAgforce);
   
   strcat(t_NmeaAgforce, "\*");
   
-  t_check[0]= hex[(cs>>4)&0xF];
-  t_check[1]= hex[(cs)&0xF];
-  t_check[2] = '\0';
   strcat(t_NmeaAgforce, t_check);
   
   strcpy(nmeaGforce,t_NmeaAgforce);
@@ -93,7 +86,6 @@ void NMEA::setPTAS1(float cv, float av, long altitudeF){
   char t_av[7];
   char t_cv[7];
   char t_altitudeF[10];
-  char t_check[3];
   char t_tail[3] = ",,"; //including tas
   char t_comma[2]=",";
 
@@ -112,10 +104,7 @@ void NMEA::setPTAS1(float cv, float av, long altitudeF){
    strcat(t_nmeaPTAS1,t_tail);
    strcat(t_nmeaPTAS1, "\*");
 
-  byte cs = getCRC(t_nmeaPTAS1);
-   t_check[0]= hex[(cs>>4)&0xF];
-   t_check[1]= hex[(cs)&0xF];
-   t_check[2] = '\0';
+   getCRC(t_nmeaPTAS1);   
    strcat(t_nmeaPTAS1, t_check);
    
    strcpy(nmeaPTAS1,t_nmeaPTAS1);
@@ -140,8 +129,7 @@ void NMEA::setnmeaVarioLXWP0(double varioAlt, float a, float b, float c, float d
     char t_nmeaVarioLXWP0[60]= "$LXWP0,N,,";
     char t_vario[6];
     char t_alt[9];
-    char t_mag[6];
-    char t_check[3];
+    char t_mag[6];  
     char t_tail[3] = ",,";
     char t_comma[2]=",";
     
@@ -175,12 +163,8 @@ void NMEA::setnmeaVarioLXWP0(double varioAlt, float a, float b, float c, float d
     strcat(t_nmeaVarioLXWP0, "\*");
     
    
-    byte cs = getCRC(t_nmeaVarioLXWP0);    
-    
-    
-    t_check[0]= hex[(cs>>4)&0xF];
-    t_check[1]= hex[(cs)&0xF];
-    t_check[2] = '\0';
+    getCRC(t_nmeaVarioLXWP0);    
+
     strcat(t_nmeaVarioLXWP0, t_check);   
     
    
@@ -199,7 +183,6 @@ void NMEA::setNmeaVarioSentence(long rawPressure,double varioAlt,float climbRate
    char t_alt[9];
    char t_temperature[6];
    char t_voltage[4];
-   char t_check[3];
    char t_tail[5] = ",";
    char t_comma[2]=",";
 
@@ -226,12 +209,7 @@ void NMEA::setNmeaVarioSentence(long rawPressure,double varioAlt,float climbRate
    strcat(t_nmeaVario,t_tail);
    strcat(t_nmeaVario, "\*");
    
-   
-   byte cs = getCRC(t_nmeaVario);
-   
-   t_check[0]= hex[(cs>>4)&0xF];
-   t_check[1]= hex[(cs)&0xF];
-   t_check[2] = '\0';
+   getCRC(t_nmeaVario);
 
    strcat(t_nmeaVario, t_check);  
     
@@ -260,13 +238,9 @@ void NMEA::setNmeaHumidSentence(int temperatureH11Kelvin, int humidity) {
   
    strcat(t_nmeaHumid,t_tail);
    strcat(t_nmeaHumid, "\*");
-
    
-   byte cs = (t_nmeaHumid);
-   t_check[0]= hex[(cs>>4)&0xF];
-   t_check[1]= hex[(cs)&0xF];
-   t_check[2] = '\0';
-
+   getCRC(t_nmeaHumid);
+   
    strcat(t_nmeaHumid, t_check);        
    strcpy(nmeaHumid,t_nmeaHumid);
   
@@ -274,7 +248,7 @@ void NMEA::setNmeaHumidSentence(int temperatureH11Kelvin, int humidity) {
 }
   
 
-byte NMEA::getCRC(char *buff) {
+void NMEA::getCRC(char *buff) {
   // NMEA CRC: XOR each byte with previous for all chars between '$' and '*'
   char c;
   byte i;
@@ -299,9 +273,12 @@ byte NMEA::getCRC(char *buff) {
     }
   
   }
- 
+
+  //Single threaded, so this is allowed
+  t_check[0]= hex[(CRC>>4)&0xF]; 
+  t_check[1]= hex[(CRC)&0xF];
+  t_check[2] = '\0';
   
-  return CRC;
   //based on code by Elimeléc López - July-19th-2013
 }
 

@@ -18,7 +18,7 @@ void getConfigFromEEPROM();
 void saveConfigToEEPROM();
 void setDefaultConfig();
 String getStringFromBool(bool bval);
-void getConfigVars(SoftwareSerial outSerial) ;
+void getConfigVars() ;
 
 
 typedef struct {

@@ -17,9 +17,7 @@ www.primalcode.nl
 #include <TimedAction.h>
 #include "MS5611.h"
 #include <dht.h>
-#if defined(ACCL)
 #include <MPU6050.h>
-#endif
 #include <HMC5883L.h> 
 #include <SoftwareSerial.h>
 #include <Wire.h>
@@ -71,28 +69,39 @@ bool hasrun=false;
 TimedAction timedNmea6 = TimedAction(155, collectNmea6); // 6 times per second (155 close enough) / (vario/s is dependant on this)
 
 #if defined(VARIO)
-TimedAction readVario = TimedAction(VARIOREADMS, readVarioPressure); //processor to fast.
-MS5611 baro(BAROADDR);
+  TimedAction readVario = TimedAction(VARIOREADMS, readVarioPressure); //processor to fast.
+  MS5611 baro(BAROADDR);
 #if defined(VARIO2)
-MS5611 baro_2(BAROADDR2); 
+  MS5611 baro_2(BAROADDR2); 
 #endif
 #endif
-dht dhts;
-NMEA nmea;
+
+#if defined(DHT)
+  dht dhts;
+#endif
+
 #if defined(ACCL)
-TimedAction readACCL = TimedAction(ACCLREADMS, readACCLSensor); //processor to fast
-MPU6050 accelgyro;
+  TimedAction readACCL = TimedAction(ACCLREADMS, readACCLSensor); //processor to fast
+  MPU6050 accelgyro;
 #endif
-HMC5883L mag;
-VoltageReference vRef = VoltageReference();
+
+#if defined(MAG)
+  HMC5883L mag;
+#endif
 
 #if defined(EPSWIFI)
-SoftwareSerial serialEPS(WIFIRX_PIN,WIFITX_PIN); //board pin 2, 3 also
-#endif
-#if defined(SERIALBT)
-SoftwareSerial serialBT(BTRX_PIN,BTTX_PIN);
+  SoftwareSerial serialEPS(WIFIRX_PIN,WIFITX_PIN); //board pin 2, 3 also
 #endif
 
+#if defined(SERIAL1OUTONLY)     
+    HardwareSerial &serialBT = Serial;
+#else 
+    SoftwareSerial serialBT(BTRX_PIN,BTTX_PIN);
+#endif 
+
+VoltageReference vRef = VoltageReference();
+ NMEA nmea;
+ 
 //----------------------------------------------------------------------------//
 // Functions 
 //----------------------------------------------------------------------------//
@@ -159,15 +168,19 @@ void collectNmea6(){
    
   
 }
-#if defined(ACCL)
+
 void readACCLSensor() {
+  #if defined(ACCL)
   accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  #endif
 }
 
 void resetACCLcompVal() {
+  #if defined(ACCL)
   conf.accloffset = -(vectoraz/2048 )*1000;
+  #endif
 }
-#endif
+
 
 void initSensors(){
 
@@ -189,7 +202,9 @@ void initSensors(){
   accelgyro.initialize();  
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
 #endif
+#if defined(MAG)
   mag.initialize();
+#endif
 }
 
 
@@ -230,7 +245,7 @@ void sendSensorData() {
      nmea.setGforce((vectoraz /2048) + (conf.accloffset/1000) );
     #endif 
      
-     #if defined (DHT11) 
+     #if defined (DHT) 
              dhts.read11(DHT11_PIN);
      #endif
      #if defined (MAG)
@@ -288,8 +303,10 @@ void readVarioPressure(){
 
 void runOnce(){
   
-  if (!hasrun) {
+  if (!hasrun) {    
+    #if defined(ACCL)
     resetACCLcompVal();
+    #endif
   }
   hasrun=true;
 }
@@ -302,7 +319,7 @@ void runOnce(){
 
 void setup() {
   Wire.setClock(400000UL);
-   Serial.begin(GPSSERIAL); //for the gps
+   Serial.begin(SERIAL1BAUD); //for the gps
    Wire.begin();
    
   #if defined(EPSWIFI)
@@ -318,16 +335,14 @@ void setup() {
   #if defined(SERIALBT) 
     serialBT.begin(SERIALBTBAUD); 
   #endif
-  
+
   pinMode(13, OUTPUT); //LED
   
   ledOn();   
   getConfig();
     
   initSensors();
-  if(conf.bluetoothOnly) {
-   
-  }else{
+  if(!conf.bluetoothOnly) {
     #if defined(EPSAT)
     setSendData();
     #endif
@@ -358,15 +373,16 @@ void loop() {
         nmea_altitudeave.push(alt);
       #endif      
     }
-    
- #if defined(SERIALBT)
+
    if (btCommand) {
      if (serialBT.available()) {
         char inChar = serialBT.read();
-        getConfVal(inChar); 
+  
+            getConfVal(inChar); 
+        
      }      
    }
-  #endif       
+        
    
    if (startwait && runloop) {  //Give the sensors time to warm up
           

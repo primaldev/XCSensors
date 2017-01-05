@@ -31,7 +31,7 @@ void getConfig(){ //load default config values from EEPROM
      Serial.println("No config from EE");
    }
 
-   getConfigVars(serialBT);
+   getConfigVars();
 }
 
 void setDefaultConfig(){
@@ -66,77 +66,153 @@ void setDefaultConfig(){
 }
 
 
-void getConfigVars(SoftwareSerial outSerial) { // order is not that important
-    outSerial.print(F("<1="));
-    outSerial.print( getStringFromBool(conf.bluetoothOnly)); 
-    outSerial.println(F(">")); 
-    outSerial.print(F("<2="));
-    outSerial.print(getStringFromBool(conf.wifiMultiPort));
-    outSerial.println(F(">"));
-    outSerial.print(F("<3="));
-    outSerial.print(conf.GPSChannel);
-    outSerial.println(F(">"));
-    outSerial.print(F("<4="));
-    outSerial.print(conf.varioChannel);
-    outSerial.println(F(">"));
-    outSerial.print(F("<5="));
-    outSerial.print(conf.humidChannel);
-    outSerial.println(F(">"));
-    outSerial.print(F("<6="));
-    outSerial.print(conf.magChannel);
-    outSerial.println(F(">"));
-    outSerial.print(F("<7="));
-    outSerial.print(conf.AcclChannel);
-    outSerial.println(F(">"));
-    outSerial.print(F("<8="));
-    outSerial.print(conf.ssid);
-    outSerial.println(F(">"));
-    outSerial.print(F("<9="));
-    outSerial.print(conf.password);
-    outSerial.println(F(">"));
-    outSerial.print(F("<10="));
-    outSerial.print(conf.magDeclination);
-    outSerial.println(F(">"));
-    outSerial.print(F("<11="));
-    outSerial.print(String(conf.qnePressure));
-    outSerial.println(F(">"));
-    outSerial.print(F("<12="));
-    outSerial.print(conf.varioDeadBand);
-    outSerial.println(F(">"));
-    outSerial.print(F("<13="));
-    outSerial.print(conf.vario2CalcMethod);
-    outSerial.println(F(">"));
-    outSerial.print(F("<14="));
-    outSerial.print(conf.ptas1);
-    outSerial.println(F(">"));
-    outSerial.print(F("<15="));
-    outSerial.print(conf.ptasav); 
-    outSerial.println(F(">"));
-    outSerial.print(F("<16="));
-    outSerial.print(conf.lxnav); 
-    outSerial.println(F(">"));
-    outSerial.print(F("<17="));
-    outSerial.print(conf.accloffset); 
-    outSerial.println(F(">"));
-    outSerial.print(F("<18="));
-    outSerial.print(conf.variosmooth); 
-    outSerial.println(F(">"));
-    outSerial.print(F("<19="));
-    outSerial.print(conf.variopaced); 
-    outSerial.println(F(">"));
-    outSerial.print(F("<20="));
-    outSerial.print(conf.buzzer); 
-    outSerial.println(F(">"));
-    outSerial.print(F("<21="));
-    outSerial.print(conf.varioAudioDeadBand); 
-    outSerial.println(F(">"));
-    outSerial.print(F("<22="));
-    outSerial.print(conf.varioAudioSinkDeadBand); 
-    outSerial.println(F(">"));
+
+#if defined(HUMANCONFIG)
+
+
+void printaf(int n) {
+   switch (n) {
+    
+    case 1: serialBT.print(F("1) Bluetooth Only: ")); break;
+    case 2: serialBT.print(F("2) Wifi Multiport: ")); break;
+    case 3: serialBT.print(F("3) GPS Channel: ")); break;
+    case 4: serialBT.print(F("4) Vario Channel: ")); break;
+    case 5: serialBT.print(F("5) Humid Sensor Channel: ")); break;
+    case 6: serialBT.print(F("6) Mag track Channel: ")); break;
+    case 7: serialBT.print(F("7) Accl Channel: ")); break;
+    case 8: serialBT.print(F("8) Wifi SSID: ")); break;
+    case 9: serialBT.print(F("9) Wifi Password: ")); break;
+    case 10: serialBT.print(F("10) Magentic Declination: ")); break;
+    case 11: serialBT.print(F("11) QNE Pressure: ")); break;
+    case 12: serialBT.print(F("12) Vario deadband (x1000): ")); break;
+    case 13: serialBT.print(F("13) Dual Vario Calculation: ")); break;
+    case 14: serialBT.print(F("14) Send PTAS: ")); break;
+    case 15: serialBT.print(F("15) Include vario Avarage in PTAS: ")); break;
+    case 16: serialBT.print(F("16) Send LXNAV: ")); break;
+    case 17: serialBT.print(F("17) Accl manual offset x1000: ")); break;
+    case 18: serialBT.print(F("18) Vario smoothness level: ")); break;
+    case 19: serialBT.print(F("19) Vario synced pace: ")); break;
+    case 20: serialBT.print(F("20) Enable Vario Audio: ")); break;    
+    case 21: serialBT.print(F("21) Vario Audio asc deadband x1000: ")); break;
+    case 22: serialBT.print(F("22) Vario audio sink deadband x1000: ")); break;
+
+   
+   }
+  
+}
+
+void printtf() {
+  serialBT.println();
+  
+}
+
+void printhd() {
+   serialBT.println();
+   serialBT.println(F("XCSensors Config options:"));
+   serialBT.println(F("200 - Stop Feed"));
+   serialBT.println(F("201 - Start Feed"));
+   serialBT.println(F("0 - Default values"));
+   serialBT.println(F("101 - This menu"));
+   serialBT.println(F("100 - Save to EEPROM"));
+   serialBT.println(F("106 - Calibrate Accelerometer"));
+   serialBT.println(F("Use 1 for on and 0 for off"));
+   serialBT.println();
+   serialBT.println(F("XCSensors Configuration:"));
+   serialBT.println();
+} 
+  
+#else
+void printaf(int n) {
+  
+    serialBT.print(F("<"));
+    serialBT.print(n);
+    serialBT.print(F("="));
+}
+void printtf() {
+  serialBT.println(F(">"));
+}
+
+void printhd() {
+   
+}
+  
+#endif
+
+
+
+void getConfigVars() { // order is not that important
+    printhd();
+    printaf(1);
+    serialBT.print( getStringFromBool(conf.bluetoothOnly)); 
+    printtf();     
+    printaf(2);
+    serialBT.print(getStringFromBool(conf.wifiMultiPort));
+    printtf();
+    printaf(3);
+    serialBT.print(conf.GPSChannel);
+    printtf();
+    printaf(4);
+    serialBT.print(conf.varioChannel);
+    printtf();
+    printaf(5);
+    serialBT.print(conf.humidChannel);
+    printtf();
+    printaf(6);
+    serialBT.print(conf.magChannel);
+    printtf();
+    printaf(7);
+    serialBT.print(conf.AcclChannel);
+    printtf();
+    printaf(8);
+    serialBT.print(conf.ssid);
+    printtf();
+    printaf(9);
+    serialBT.print(conf.password);
+    printtf();
+    printaf(10);
+    serialBT.print(conf.magDeclination);
+    printtf();
+    printaf(11);
+    serialBT.print(String(conf.qnePressure));
+    printtf();
+    printaf(12);
+    serialBT.print(conf.varioDeadBand);
+    printtf();
+    printaf(13);
+    serialBT.print(conf.vario2CalcMethod);
+    printtf();
+    printaf(14);
+    serialBT.print(conf.ptas1);
+    printtf();
+    printaf(15);
+    serialBT.print(conf.ptasav); 
+    printtf();
+    printaf(16);
+    serialBT.print(conf.lxnav); 
+    printtf();
+    printaf(17);
+    serialBT.print(conf.accloffset); 
+    printtf();
+    printaf(18);
+    serialBT.print(conf.variosmooth); 
+    printtf();
+    printaf(19);
+    serialBT.print(conf.variopaced); 
+    printtf();
+    printaf(20);
+    serialBT.print(conf.buzzer); 
+    printtf();
+    printaf(21);
+    serialBT.print(conf.varioAudioDeadBand); 
+    printtf();
+    printaf(22);
+    serialBT.print(conf.varioAudioSinkDeadBand); 
+    printtf();
     
 }
 
-String getStringFromBool(bool bval){
+
+String getStringFromBool(bool bval){ //TODO: process Boolean values
    if (bval) {
     return "On";
    }else{
@@ -153,8 +229,8 @@ void saveConfigToEEPROM(){
   
 }
 
-bool getBoolFromVal(char *sval) {
-  if (sval[0]=="1") {
+bool getBoolFromVal(char *sval) { //TODO: process Boolean values
+  if (atoi(sval)==1) {
     return true;
   } else {
     return false;
@@ -190,15 +266,15 @@ void setConf(int varname, char *value) {
     case 22: conf.varioAudioSinkDeadBand=atoi(value); break;
     case 100: saveConfigToEEPROM(); break; //save to eeprom
     case 106: resetACCLcompVal(); // quick set the ACCL to 0
-    case 101: getConfigVars(serialBT); break; // get config for app
+    case 101: getConfigVars(); break; // get config for app
     case 200: runloop=false; break; //stop 
     case 201: runloop=true; break; //start
     default:
      
-     getConfigVars(serialBT);
+     getConfigVars();
     break;
   }
-  
+    getConfigVars();
 }
 
 
