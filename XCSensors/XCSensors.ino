@@ -41,7 +41,7 @@ bool btCommand=true;
 bool startwait=false;
 
 Average<float> nmea_varioave(6); 
-Average<float> nmea_altitudeave(6); //fixed values i.c.w. timed action
+Average<double> nmea_altitudeave(6); //fixed values i.c.w. timed action
 
 int32_t realPressureAv=1; //usable stabalized reading
 int32_t rawPressurePrev=0; //previous direct reading
@@ -150,7 +150,7 @@ void collectNmea6(){
    //get ACCL
    #if defined (ACCL)
     aax = (ACCLSMOOTH * aax + ax) / (ACCLSMOOTH +1); 
-    aay = (ACCLSMOOTH * aaz + ay) / (ACCLSMOOTH +1); 
+    aay = (ACCLSMOOTH * aay + ay) / (ACCLSMOOTH +1); 
     aaz = (ACCLSMOOTH * aaz + az) / (ACCLSMOOTH +1); 
     vectoraz = (sqrt(pow(aax,2) + pow(aay,2) + pow(aaz,2))) - 1;    
     

@@ -31,6 +31,15 @@ bool cmd=false;
 #endif
 //
 
+int getArraySize(char* ch){
+      int tmp=0;
+      while (*ch) {
+        *ch++;
+        tmp++;
+      }
+      return tmp;
+}
+
 
 
 void GPSstuff(char c) {                                         // GPSbuffer[] is global
