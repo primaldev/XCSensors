@@ -30,7 +30,7 @@ float testvario = 0;
 #endif
 //
 
-#define GPSBUFFER 80
+#define GPSBUFFER 100
 
 void GPSstuff(char c) {                                         // GPSbuffer[] is global
   static int i;                                              //   persistent within function scope
@@ -230,7 +230,7 @@ void sendNmeaAll() {
   sendNmeaHEading();
 #endif
 
-#if defined(DHT11)
+#if defined(DHT)
   sendNmeaDHT();
 #endif
 
@@ -265,8 +265,8 @@ void makeSound(float vario) {
   
   int variof = (abs(vario) * 200 ) + 800;
 
-  if (abs(vario) >= conf.varioAudioDeadBand / 1000) {
-
+  if (vario >= conf.varioAudioDeadBand / 1000) {
+    
     pulse = 600 / vario;
   } else {
     pulse = 600;
@@ -278,7 +278,7 @@ void makeSound(float vario) {
       tone(BUZZPIN, variof);
       playtone = false;
     } else if (vario < -conf.varioAudioSinkDeadBand / 1000 ) {
-
+      pulse = 600;
       tone(BUZZPIN, 200);
       playtone = false;
     } else {

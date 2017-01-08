@@ -64,9 +64,9 @@
 
 #define DHT
 #define DHTTYPE DHT11   //for the library
-#define MAG //TODO shave memory usage
+#define MAG 
 #define DHT11_PIN 3
-#define ACCL //TODO shave memory usage
+#define ACCL 
 #define ACCLREADMS 100 //how often to read the accelerom
 
 //Enable Serial Bluetooth
