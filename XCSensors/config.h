@@ -40,8 +40,8 @@
 
 //#define DEBUG
 #define CONFIGOPT //enable configuration option (EEPROM required)
-#define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. Needs a lot of program space. If disabled,
-// multiple values can be sent, handy for programs <1=on>
+#define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. If disabled,
+// it can be used by an external app and multiple values can be sent, handy for programs eg: <1=on>
 
 #define GPS
 #define GPSSERIALEVENT //use Arduino SerialEvent()
@@ -82,12 +82,10 @@
 #define BTRX_PIN 12 //7  // The serial pins for Bluetooth
 #define BTTX_PIN 11 //8
 
-/* Due to the abysmally bad standardized method of NMEA sentences, everyone ended up doing their own thing
-  resulting in a disorganized mess.
+/* 
   As a workaround for abysmally bad standardized method of NMEA sentences, different sentences can be sent
-  to different ports. This way you can implement the
-  proprietary drivers for the different sensors (LXNAV for the vario and Vega for the humid sensor)
-  The passthrough option in XCSoar does not work so well.
+  to different ports. This way you can implement the proprietary drivers for the different sensors 
+  (LXNAV for the vario and Vega for the humid sensor). The passthrough option in XCSoar does not always work.
 */
 #define CHANNEL1PORT 4353  //udp ports for the designated channels
 #define CHANNEL2PORT 10110
