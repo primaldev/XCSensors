@@ -1,39 +1,37 @@
 /*
-XCsensors by Marco van Zoest
+  XCsensors by Marco van Zoest
 
-www.primaldev.nl
-www.primalcode.nl
+  www.primaldev.nl
+  www.primalcode.nl
 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- any later version. see <http://www.gnu.org/licenses/>
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  any later version. see <http://www.gnu.org/licenses/>
 */
 
 /*
 
-Config 1: 
-GPS -> HW Serial
-BT -> SerialBT
-ESP8266 -> SerialEPS
-Config options always via BT and with bluetoothOnly disabled in the config options, data will go via Wifi
+  Config 1:
+  GPS -> HW Serial
+  BT -> SerialBT
+  ESP8266 -> SerialEPS
+  Config options always via BT and with bluetoothOnly disabled in the config options, data will go via Wifi
 
-Config 2:
-GPS -> HW Serial
-BT -> SerialBT
-No wifi, data and config options via Bluetooth
+  Config 2:
+  GPS -> HW Serial
+  BT -> SerialBT
+  No wifi, data and config options via Bluetooth
 
-Config 3:
-GPS -> HW Serial
-Kobo serial -> SerialBT
-No wifi, data and config options via SerialBT  direct connection to Kobo serial port
+  Config 3:
+  GPS -> HW Serial
+  Kobo serial -> SerialBT
+  No wifi, data and config options via SerialBT  direct connection to Kobo serial port
 
-Config 4:
-GPS -> Kobo Serial port 1
-Kobo Serial port 2 -> HW Serial
-No wifi, SerialBT disabled. Config and data via Pro mini HW Serial port. Kobo with more than one serial port needed (Kobo glo)
-
-
+  Config 4:
+  GPS -> Kobo Serial port 1
+  Kobo Serial port 2 -> HW Serial
+  No wifi, SerialBT disabled. Config and data via Pro mini HW Serial port. Kobo with more than one serial port needed (Kobo glo)
 
 */
 
@@ -41,14 +39,16 @@ No wifi, SerialBT disabled. Config and data via Pro mini HW Serial port. Kobo wi
 // Trinket pro: Pins #2 and #7 are not available (they are exclusively for USB)
 
 //#define DEBUG
-//#define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. Needs a lot of program space. If disabled,
-                    // multiple values can be sent, handy for programs <1=on> 
+#define CONFIGOPT //enable configuration option (EEPROM required)
+#define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. Needs a lot of program space. If disabled,
+// multiple values can be sent, handy for programs <1=on>
 
 #define GPS
+#define GPSSERIALEVENT //use Arduino SerialEvent()
 #define GPSTIMER //Use GPS pulse to send data. 
 #define SERIAL1BAUD 9600 // serial1 speed
 
-#define VARIO 
+#define VARIO
 #define VARIO2 //if 2nd vario
 #define VARIOREADMS 40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
 #define BAROADDR 0x77
@@ -69,24 +69,26 @@ No wifi, SerialBT disabled. Config and data via Pro mini HW Serial port. Kobo wi
 #define ACCL //TODO shave memory usage
 #define ACCLREADMS 100 //how often to read the accelerom
 
-//Enable Serial Bluetooth 
+//Enable Serial Bluetooth
 //SerialBT can also be used to connect to a Kobo serial port instead of a HC-05, no changes needed
 #define SERIALBT  //output will revert to Serial if disabled (no gps support possible)
-#define SERIALBTBAUD 38400 
-//Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400) 
-                            //AT+UART=38400,1,0 //115200 had problems
-                            //AT+NAME=iXsensors0A
-                            //AT+PSWD=1234
-                 
-               
+#define SERIALBTBAUD 38400
+/*Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400)
+  AT+UART=38400,1,0 //115200 had problems
+  AT+NAME=iXsensors0A 
+  AT+PSWD=1234
+*/
+
 #define BTRX_PIN 12 //7  // The serial pins for Bluetooth
 #define BTTX_PIN 11 //8
 
-// Due to the abysmally bad standardized method of NMEA sentences, everyone ended up doing their own thing
-// resulting in a disorganized mess. 
-// As a workaround different sentences can be sent to different ports. This way you can implement the
-// proprietary drivers for the different sensors (LXNAV for the vario and Vega for the humid sensor)
-// The passthrough option in XCSoar does not work so well.
+/* Due to the abysmally bad standardized method of NMEA sentences, everyone ended up doing their own thing
+  resulting in a disorganized mess.
+  As a workaround for abysmally bad standardized method of NMEA sentences, different sentences can be sent
+  to different ports. This way you can implement the
+  proprietary drivers for the different sensors (LXNAV for the vario and Vega for the humid sensor)
+  The passthrough option in XCSoar does not work so well.
+*/
 #define CHANNEL1PORT 4353  //udp ports for the designated channels
 #define CHANNEL2PORT 10110
 #define CHANNEL3PORT 4352
@@ -98,16 +100,22 @@ No wifi, SerialBT disabled. Config and data via Pro mini HW Serial port. Kobo wi
 
 #define BUZZER //let's go beep
 #define BUZZPIN 6 //board pin 
-//#define TESTBUZZER //simulate the vario sound for testing only
+//#define TESTBUZZER  //simulate the vario sound for testing only
 
 
 
 
 ////////////////////set Fixes/////////////////////////
 
-#if !defined(SERIALBT)
+#if !defined(SERIALBT) && !defined(GPS)
 #define SERIAL1OUTONLY
 #endif
 
+#if !defined(GPS)
+#undef GPSSERIALEVENT
+#endif
 
+#if !defined(GPSSERIALEVENT)
+#undef GPSTIMER
+#endif
 
