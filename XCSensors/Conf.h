@@ -33,18 +33,23 @@ typedef struct {
   double qnePressure;
   int varioDeadBand;
   int magDeclination;
-  int vario2CalcMethod;
   bool wifiMultiPort;
   bool bluetoothOnly;
   bool ptas1;
-  bool ptasav;
+
   bool lxnav;
   int accloffset;
   byte variosmooth;
-  bool variopaced;
+
   bool buzzer;
   int varioAudioDeadBand;
   int varioAudioSinkDeadBand;
+
+  int advTriggerTime;
+  int advRelaxTime;
+  byte advMinSmooth;
+  byte advMaxSmooth;
+   
 } conf_t;
 
 extern conf_t conf;

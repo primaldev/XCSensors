@@ -112,9 +112,6 @@ void ledOff() {
 
 void collectNmea6() {
 #if defined(VARIO)
-  if (conf.variopaced) {
-    readVarioPressure();
-  }
 
   double realAltitude = baro.getAltitude( realPressureAv, conf.qnePressure); //Based on QN
   nmea_altitudeave.push(realAltitude);
@@ -133,13 +130,10 @@ void collectNmea6() {
 
     long altitudeF = realAltitude * 3.28 + 2000;
 
-    if (conf.ptasav) {
-
+    #if defined(PTASAVERAGE)
       av = varioAv * 1.943 * 10 + 200;
+    #endif
 
-
-    }
- 
     nmea.setPTAS1(cv, av, altitudeF);
     sendPTAS1();
   }
@@ -266,32 +260,29 @@ void readVarioPressure() {
   int32_t pressure2t;
   pressure2 = baro_2.getPressure();
 
-  switch (conf.vario2CalcMethod) {
-    case 0:
-      pressure = (pressure + pressure2) / 2;
-      break;
+#if defined(VARIO2LEASTDEV)
+  int32_t diff = rawPressurePrev - pressure;
+  int32_t diff2 = rawPressurePrev2 - pressure2;
+  int32_t sendiff1 = pressure - pressure2;
+  int32_t sendiff2 = pressure2 - pressure;
 
-    case 1: //choose the reading with the least deviation
-
-      int32_t diff = rawPressurePrev - pressure;
-      int32_t diff2 = rawPressurePrev2 - pressure2;
-      int32_t sendiff1 = pressure - pressure2;
-      int32_t sendiff2 = pressure2 - pressure;
-
-      //alter the sensor reading
-      if (fabs(diff) > fabs(diff2)) { //if the primary has more deviation use the deviation of the secondary sensor
-        pressure1t =  rawPressurePrev + diff2;
-        pressure2t = pressure2;
-      } else {
-        pressure2t = rawPressurePrev2 + diff;
-        pressure1t = pressure;
-      }
-      rawPressurePrev = pressure;
-      rawPressurePrev2 = pressure2;
-      pressure = (pressure1t + pressure2t) / 2;
-      break;
+  //alter the sensor reading
+  if (fabs(diff) > fabs(diff2)) { //if the primary has more deviation use the deviation of the secondary sensor
+    pressure1t =  rawPressurePrev + diff2;
+    pressure2t = pressure2;
+  } else {
+    pressure2t = rawPressurePrev2 + diff;
+    pressure1t = pressure;
   }
+  rawPressurePrev = pressure;
+  rawPressurePrev2 = pressure2;
+  pressure = (pressure1t + pressure2t) / 2;
+  
+#else
 
+  pressure = (pressure + pressure2) / 2;
+
+#endif
 #endif
 
   realPressureAv = (conf.variosmooth * realPressureAv + pressure) / (conf.variosmooth + 1);

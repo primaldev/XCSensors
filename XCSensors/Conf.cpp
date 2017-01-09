@@ -49,19 +49,21 @@ void setDefaultConfig() {
   conf.magDeclination = 0; //in Radians. Find your declination here: http://www.magnetic-declination.com/
   conf.qnePressure = 101325; //QNH value to calculate vario Altitude
   conf.varioDeadBand = 100; // X 1000 levels lower than this = 0. (ignored by ptas1)
-  conf.vario2CalcMethod = 1; //0 = average, 1=least deviation
   conf.wifiMultiPort = true; //use different ports for NMEA sentences, or only the gps port
   conf.bluetoothOnly = true; //only send data to BT. reset needed to start WIFI
   conf.ptas1 = true; // send ptas1 nmea, uses the gps channel (once every 155ms)
-  conf.ptasav = true; //inlclude vario avarage in ptas sentence. ( value is ignored by XCsoar)
   conf.lxnav = true; //send vario lxnav sentence
   conf.accloffset = 0; //manual offset for accl x 1000
   conf.variosmooth = 20; //low pass filter, the higher the number the slower the raw vario reading changes.
-  conf.variopaced = false; //take a reading every 155ms instead of every n'th cycle of the loop(). Much slower reaction but stable vario smooth
   conf.buzzer = true; // turn vario audio on or off
   conf.varioAudioDeadBand = 200; //X 1000
   conf.varioAudioSinkDeadBand = 300;  //X 1000 and absolute value
+  conf.advTriggerTime = 1500; // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
+  conf.advRelaxTime= 30000;  // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
+  conf.advMinSmooth=10; // lowest level for conf.variosmooth
+  conf.advMaxSmooth=40;// highest level for conf.variosmooth
   saveConfigToEEPROM();
+
 
 }
 
@@ -85,16 +87,17 @@ void printaf(int n) {
     case 10: serialBT.print(F("10) Magentic Declination: ")); break;
     case 11: serialBT.print(F("11) QNE Pressure: ")); break;
     case 12: serialBT.print(F("12) Vario deadband (x1000): ")); break;
-    case 13: serialBT.print(F("13) Dual Vario Calculation: ")); break;
     case 14: serialBT.print(F("14) Send PTAS: ")); break;
-    case 15: serialBT.print(F("15) Include vario Avarage in PTAS: ")); break;
     case 16: serialBT.print(F("16) Send LXNAV: ")); break;
     case 17: serialBT.print(F("17) Accl manual offset x1000: ")); break;
     case 18: serialBT.print(F("18) Vario smoothness level: ")); break;
-    case 19: serialBT.print(F("19) Vario synced pace: ")); break;
     case 20: serialBT.print(F("20) Enable Vario Audio: ")); break;
     case 21: serialBT.print(F("21) Vario Audio asc deadband x1000: ")); break;
     case 22: serialBT.print(F("22) Vario audio sink deadband x1000: ")); break;
+    case 24: serialBT.print(F("24) Adaptive vario trigger time: ")); break;
+    case 25: serialBT.print(F("25) Adaptive vario relax time: ")); break;
+    case 26: serialBT.print(F("26) Adaptive vario minimum smooth level: ")); break;
+    case 27: serialBT.print(F("27) Adaptive vario maximum smooth level: ")); break;
 
 
   }
@@ -178,14 +181,8 @@ void getConfigVars() { // order is not that important
   printaf(12);
   serialBT.print(conf.varioDeadBand);
   printtf();
-  printaf(13);
-  serialBT.print(conf.vario2CalcMethod);
-  printtf();
   printaf(14);
   serialBT.print(conf.ptas1);
-  printtf();
-  printaf(15);
-  serialBT.print(conf.ptasav);
   printtf();
   printaf(16);
   serialBT.print(conf.lxnav);
@@ -196,9 +193,6 @@ void getConfigVars() { // order is not that important
   printaf(18);
   serialBT.print(conf.variosmooth);
   printtf();
-  printaf(19);
-  serialBT.print(conf.variopaced);
-  printtf();
   printaf(20);
   serialBT.print(conf.buzzer);
   printtf();
@@ -207,6 +201,18 @@ void getConfigVars() { // order is not that important
   printtf();
   printaf(22);
   serialBT.print(conf.varioAudioSinkDeadBand);
+  printtf();
+  printaf(24);
+  serialBT.print(conf.advTriggerTime);
+  printtf();
+  printaf(25);
+  serialBT.print( conf.advRelaxTime);
+  printtf();
+  printaf(26);
+  serialBT.print( conf.advMinSmooth);
+  printtf();
+  printaf(27);
+  serialBT.print(conf.advMaxSmooth);
   printtf();
 
 }
@@ -254,16 +260,17 @@ void setConf(int varname, char *value) {
     case 10: conf.magDeclination = atoi(value); break;
     case 11: conf.qnePressure = atoi(value); break;
     case 12: conf.varioDeadBand = atoi(value); break;
-    case 13: conf.vario2CalcMethod = atoi(value); break;
     case 14: conf.ptas1 = getBoolFromVal(value); break;
-    case 15: conf.ptasav = getBoolFromVal(value); break;
     case 16: conf.lxnav = getBoolFromVal(value); break;
     case 17: conf.accloffset = atoi(value); break;
     case 18: conf.variosmooth = atoi(value); break;
-    case 19: conf.variopaced = getBoolFromVal(value); break;
     case 20: conf.buzzer = getBoolFromVal(value); break;
     case 21: conf.varioAudioDeadBand = atoi(value); break;
     case 22: conf.varioAudioSinkDeadBand = atoi(value); break;
+    case 24: conf.advTriggerTime = atoi(value); break;
+    case 25: conf.advRelaxTime = atoi(value); break;
+    case 26: conf.advMinSmooth = atoi(value); break;
+    case 27: conf.advMaxSmooth = atoi(value); break;
     case 100: saveConfigToEEPROM(); break; //save to eeprom
     case 106: resetACCLcompVal(); // quick set the ACCL to 0
     case 101: getConfigVars(); break; // get config for app

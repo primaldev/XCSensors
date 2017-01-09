@@ -50,26 +50,18 @@
 
 #define VARIO
 #define VARIO2 //if 2nd vario
-#define VARIOREADMS 35//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
+#define VARIO2LEASTDEV //base dual vario on least deviation
+#define PTASAVERAGE //include vario avarage in ptas sentence (ignored by XCSoar)
+#define VARIOREADMS 40//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
 #define BAROADDR 0x77
 #define BAROADDR2 0x76
 
 /*
  * Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
- * It does it by deteting "triggers". A trigger occurs when the vario value exceeds ADVLOWTRIGGER and
- * returns to a lower value within the timelimit set by ADVTIMECHECK. One trigger wil increase the value
- * of conf.variosmooth. If no trigger occurs within the time limit of ADVSTIMECHECK, the value of conf.variosmooth
- * is decreased. You can check the value with the menu option as it changes. Setting the value has a temporary effect
- * as it will be changed over time. To find the best value for ADVMINSMOOTH and ADVMAXSMOOTH, disable ADAPTIVEVARIO 
- * and test it by manually changing conf.variosmooth. 
- * TODO: add to config menu.
+ * It does it by detecting "triggers". 
  */
 #define ADAPTIVEVARIO //Adapts the vario low pass filter aka. 
-#define ADVLOWTRIGGER 0.08
-#define ADVTIMECHECK 2000 //2 seconds
-#define ADVSTIMECHECK 30000 //30 seconds
-#define ADVMINSMOOTH 10  //lowest filter level
-#define ADVMAXSMOOTH 40
+#define ADVLOWTRIGGER 0.08 // level at witch low trigger are checked
 
 #define EPSWIFI
 #define EPSAT  //use AT commands
@@ -85,6 +77,7 @@
 #define DHT11_PIN 3
 #define ACCL 
 #define ACCLREADMS 100 //how often to read the accelerom
+#define ACCLSMOOTH 10 //Lowpass filter level
 
 //Enable Serial Bluetooth
 //SerialBT can also be used to connect to a Kobo serial port instead of a HC-05, no changes needed
@@ -109,7 +102,7 @@
 #define CHANNEL3PORT 4352
 #define CHANNEL4PORT 2000 //depending on esp firmware, the 4rth channel might not be available
 
-#define ACCLSMOOTH 7 //Lowpass filter level
+
 
 #define VREFCAL 1126400L //Calibration voltage level. see https://github.com/rlogiacco/VoltageReference
 
