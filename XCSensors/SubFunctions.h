@@ -18,7 +18,7 @@ void getConfVal(char c);
 void sendAccelerometor();
 float getCalcHeading();
 void meansensors();
-
+void checkAdaptiveVario(double vario);
 #if defined(BUZZER)
 void makeSound(float vario);
 void makeSoundp(int32_t tpressure);

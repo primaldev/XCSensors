@@ -17,6 +17,11 @@
 #include "SendData.h"
 
 bool cmd = false;
+#if defined(ADAPTIVEVARIO)
+bool vTriggerd=false;
+unsigned long vtime = 0;
+#endif
+
 
 #if defined(BUZZER)
 
@@ -263,9 +268,9 @@ void makeSound(float vario) {
 
   }
   
-  int variof = (abs(vario) * 200 ) + 800;
+  int variof = (fabs(vario) * 200 ) + 800;
 
-  if (vario >= conf.varioAudioDeadBand / 1000) {
+  if (vario >= double(conf.varioAudioDeadBand) / 1000) {
     
     pulse = 600 / vario;
   } else {
@@ -273,11 +278,11 @@ void makeSound(float vario) {
   }
 
   if (playtone) {
-    if (vario > conf.varioAudioDeadBand / 1000 ) {
-
+    if (vario > double(conf.varioAudioDeadBand) / 1000 ) {
+      
       tone(BUZZPIN, variof);
       playtone = false;
-    } else if (vario < -conf.varioAudioSinkDeadBand / 1000 ) {
+    } else if (vario < -double(conf.varioAudioSinkDeadBand) / 1000 ) {
       pulse = 600;
       tone(BUZZPIN, 200);
       playtone = false;
@@ -310,5 +315,37 @@ void makeSound(float vario) {
 
 #endif
 
+
+
+void checkAdaptiveVario(double vario){
+#if defined(ADAPTIVEVARIO)
+  if (fabs(vario) > ADVLOWTRIGGER && !vTriggerd) { //fabs abs but can handle floats
+     vtime=millis();
+     vTriggerd=true;
+
+  }
+
+  int diff = millis() - vtime;
+  
+  if (vTriggerd && fabs(vario) < ADVLOWTRIGGER && diff < ADVTIMECHECK)  { //zero
+     if(conf.variosmooth <= ADVMAXSMOOTH ) {
+       conf.variosmooth++;
+       vTriggerd=false;
+       vtime=millis();
+
+     }
+  }
+
+  if (fabs(vario) < ADVLOWTRIGGER && !vTriggerd && diff > ADVSTIMECHECK) {
+      if(conf.variosmooth > ADVMINSMOOTH ) {
+        conf.variosmooth--;
+        vtime=millis();
+       
+      }
+  }
+  
+
+#endif  
+}
 
 

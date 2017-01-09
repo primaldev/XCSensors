@@ -50,9 +50,26 @@
 
 #define VARIO
 #define VARIO2 //if 2nd vario
-#define VARIOREADMS 40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
+#define VARIOREADMS 35//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
 #define BAROADDR 0x77
 #define BAROADDR2 0x76
+
+/*
+ * Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
+ * It does it by deteting "triggers". A trigger occurs when the vario value exceeds ADVLOWTRIGGER and
+ * returns to a lower value within the timelimit set by ADVTIMECHECK. One trigger wil increase the value
+ * of conf.variosmooth. If no trigger occurs within the time limit of ADVSTIMECHECK, the value of conf.variosmooth
+ * is decreased. You can check the value with the menu option as it changes. Setting the value has a temporary effect
+ * as it will be changed over time. To find the best value for ADVMINSMOOTH and ADVMAXSMOOTH, disable ADAPTIVEVARIO 
+ * and test it by manually changing conf.variosmooth. 
+ * TODO: add to config menu.
+ */
+#define ADAPTIVEVARIO //Adapts the vario low pass filter aka. 
+#define ADVLOWTRIGGER 0.08
+#define ADVTIMECHECK 2000 //2 seconds
+#define ADVSTIMECHECK 30000 //30 seconds
+#define ADVMINSMOOTH 10  //lowest filter level
+#define ADVMAXSMOOTH 40
 
 #define EPSWIFI
 #define EPSAT  //use AT commands
@@ -115,5 +132,9 @@
 
 #if !defined(GPSSERIALEVENT)
 #undef GPSTIMER
+#endif
+
+#if !defined(EPSWIFI)
+#undef EPSAT
 #endif
 

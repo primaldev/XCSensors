@@ -143,8 +143,8 @@ void collectNmea6() {
     nmea.setPTAS1(cv, av, altitudeF);
     sendPTAS1();
   }
-
-  if (abs(vario) > 0 && abs(vario) < conf.varioDeadBand / 1000) {
+  checkAdaptiveVario(vario);
+  if (fabs(vario) > 0 && fabs(vario) < conf.varioDeadBand / 1000) {
     vario = 0;
   }
   nmea_varioave.push(vario);
@@ -279,7 +279,7 @@ void readVarioPressure() {
       int32_t sendiff2 = pressure2 - pressure;
 
       //alter the sensor reading
-      if (abs(diff) > abs(diff2)) { //if the primary has more deviation use the deviation of the secondary sensor
+      if (fabs(diff) > fabs(diff2)) { //if the primary has more deviation use the deviation of the secondary sensor
         pressure1t =  rawPressurePrev + diff2;
         pressure2t = pressure2;
       } else {
