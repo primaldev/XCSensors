@@ -31,10 +31,10 @@ TODO:
 MS5611::MS5611(byte t_add){
   add = t_add;
 	_T 		= 0;
-	_P 		= 0;
+	uP 		= 0;
 	_lastTime 	= T_THR;
 	for(uint8_t k=0; k<N_PROM_PARAMS; k++) 
-		_C[k]=69;
+		uC[k]=69;
 }
 
 void MS5611::begin(){
@@ -48,13 +48,13 @@ int32_t	MS5611::getPressure(){
 	getTemperature(); 		//updates temperature _dT and _T
 	uint32_t D1 = getRawPressure();
 	
-	int64_t OFF  = (int64_t)_C[2-1]*65536 
-				 + (int64_t)_C[4-1]*_dT/128;
+	int64_t OFF  = (int64_t)uC[2-1]*65536 
+				 + (int64_t)uC[4-1]*_dT/128;
 	
-	int64_t SENS = (int64_t)_C[1-1]*32768 
-				 + (int64_t)_C[3-1]*_dT/256;
-	_P = (D1*SENS/2097152 - OFF)/32768;
-	return _P;
+	int64_t SENS = (int64_t)uC[1-1]*32768 
+				 + (int64_t)uC[3-1]*_dT/256;
+	uP = (D1*SENS/2097152 - OFF)/32768;
+	return uP;
 }
 
 uint32_t MS5611::getRawPressure(){
@@ -74,10 +74,10 @@ int32_t MS5611::getTemperature(){
 	//****************
 	uint32_t D2; 	
 	D2  = getRawTemperature();
-	_dT = D2-((uint32_t)_C[5-1] * 256); 		//update '_dT'
-	// Below, 'dT' and '_C[6-1]'' must be casted in order to prevent overflow
+	_dT = D2-((uint32_t)uC[5-1] * 256); 		//update '_dT'
+	// Below, 'dT' and 'uC[6-1]'' must be casted in order to prevent overflow
 	// A bitwise division can not be dobe since it is unpredictible for signed integers
-	_T = 2000 + ((int64_t)_dT * _C[6-1])/8388608;
+	_T = 2000 + ((int64_t)_dT * uC[6-1])/8388608;
 	return _T;
 }
 
@@ -91,13 +91,13 @@ uint32_t MS5611::getRawTemperature(){
 void MS5611::readCalibration(){
 	for(uint8_t k=0;k<6;k++){
 		sendCommand(CMD_PROM_READ_BASE + k*2);
-		_C[k] = (uint16_t) (readnBytes(NBYTES_PROM) & 0xFFFF); //masking out two LSB
+		uC[k] = (uint16_t) (readnBytes(NBYTES_PROM) & 0xFFFF); //masking out two LSB
 	}
 }
 
 void MS5611::getCalibration(uint16_t *C){
 	for(uint8_t k=0;k<N_PROM_PARAMS;k++)
-		C[k]=_C[k];
+		C[k]=uC[k];
 	return;
 }
 

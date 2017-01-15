@@ -16,57 +16,57 @@
 #include "config.h" //All other files must use return values or classes
 #include "Conf.h"
 
-#if defined(EPSWIFI)
+#if defined(ESPWIFI)
 
-void setEPSPort(int id, int port) {
-  serialEPS.print(F("AT+CIPSTART="));
-  serialEPS.print(id);
-  serialEPS.print(F(",\"UDP\",\"255.255.255.255\","));
-  serialEPS.println(port);
+void setESPPort(int id, int port) {
+  SERIALESP.print(F("AT+CIPSTART="));
+  SERIALESP.print(id);
+  SERIALESP.print(F(",\"UDP\",\"255.255.255.255\","));
+  SERIALESP.println(port);
   delay(500);
 }
 
 void startESPSoftAP() {
-  serialEPS.println(F("+++AT+RST"));
+  SERIALESP.println(F("+++AT+RST"));
   delay(1000);
-  serialEPS.println(F("AT+RFPOWER=0"));
+  SERIALESP.println(F("AT+RFPOWER=0"));
   delay(200);
-  serialEPS.println(F("AT+CWMODE=3"));
+  SERIALESP.println(F("AT+CWMODE=3"));
   delay(500);
-  serialEPS.print(F("AT+CWSAP=\""));
-  serialEPS.print(conf.ssid);
-  serialEPS.print(F("\",\""));
-  serialEPS.print(conf.password);
-  serialEPS.println(F("\",5,3"));
-  delay(500);
+  SERIALESP.print(F("AT+CWSAP=\""));
+  SERIALESP.print(WIFISSID);
+  SERIALESP.print(F("\",\""));
+  SERIALESP.print(WIFIPASSWORD);
+  SERIALESP.println(F("\",5,3"));
+  delay(1000);
 }
 
-void setEPSMulti() {
+void setESPMulti() {
 
   startESPSoftAP();
-  serialEPS.println(F("AT+CIPMUX=1"));
+  SERIALESP.println(F("AT+CIPMUX=1"));
   delay(500);
-  setEPSPort(1, CHANNEL1PORT);
-  setEPSPort(2, CHANNEL2PORT);
-  setEPSPort(3, CHANNEL3PORT);
-  setEPSPort(4, CHANNEL4PORT);
+  setESPPort(1, CHANNEL1PORT);
+  setESPPort(2, CHANNEL2PORT);
+  setESPPort(3, CHANNEL3PORT);
+  setESPPort(4, CHANNEL4PORT);
 }
 
 void setESPBroadCast() {
   startESPSoftAP();
-  serialEPS.print(F("AT+CIPSTART=\"UDP\",\"255.255.255.255\","));
-  serialEPS.println(CHANNEL1PORT);
+  SERIALESP.print(F("AT+CIPSTART=\"UDP\",\"255.255.255.255\","));
+  SERIALESP.println(CHANNEL1PORT);
   delay(500);
-  serialEPS.println(F("AT+CIPMODE=1"));
+  SERIALESP.println(F("AT+CIPMODE=1"));
   delay(500);
-  serialEPS.println(F("AT+CIPSEND"));
+  SERIALESP.println(F("AT+CIPSEND"));
 }
 
 #endif
 
 void setSendData() {
   if (conf.wifiMultiPort) {
-    setEPSMulti();
+    setESPMulti();
   } else {
     setESPBroadCast();
   }
@@ -87,27 +87,27 @@ void sendData(char *message, int id) {
   Serial.println(message);
 #else
   if (conf.bluetoothOnly) {
-    serialBT.println(message);
+    SERIAL_MAIN.println(message);
   } else {
-#if defined(EPSAT)
-#if defined(EPSAT)
+#if defined(ESPAT)
+#if defined(ESPAT)
     if (conf.wifiMultiPort) {
       int len = getSize(message) + 1; //sizeof might be wrong
-      serialEPS.print(F("AT+CIPSEND=")); //shaving memory
-      serialEPS.print( id );
-      serialEPS.print(F(","));
-      serialEPS.println(len);
+      SERIALESP.print(F("AT+CIPSEND=")); //shaving memory
+      SERIALESP.print( id );
+      SERIALESP.print(F(","));
+      SERIALESP.println(len);
       delay(10);
-      serialEPS.print(message);
-      serialEPS.print(F("\n\r"));
+      SERIALESP.print(message);
+      SERIALESP.print(F("\n\r"));
       delay(10);
     } else {
-      serialEPS.println(message);
-      serialEPS.print(F("\n\r"));
+      SERIALESP.println(message);
+      SERIALESP.print(F("\n\r"));
     }
 #else
-    serialEPS.print(message);
-    serialEPS.print(F("\n\r"));
+    SERIALESP.print(message);
+    SERIALESP.print(F("\n\r"));
 #endif
 #endif
   }

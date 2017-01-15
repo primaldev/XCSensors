@@ -34,10 +34,10 @@ class MS5611{
 	private:
 			void 		reset();
 		//variables
-		int32_t 	_P;
+		int32_t 	uP; //changed from _P, conflicts with teensy internal vars
 		int32_t  	_T;
 		int32_t 	_dT;
-		uint16_t 	_C[N_PROM_PARAMS];
+		uint16_t 	uC[N_PROM_PARAMS]; //also as above
 		uint32_t 	_lastTime;
     byte add;
 };

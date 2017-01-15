@@ -19,9 +19,8 @@
 #include <dht.h>
 #include <MPU6050.h>
 #include <HMC5883L.h>
-#include <SoftwareSerial.h>
 #include <Wire.h>
-#include <VoltageReference.h>
+//#include <VoltageReference.h>
 #include "Conf.h"
 #include "SubFunctions.h"
 #include "Average.h"
@@ -62,10 +61,12 @@ bool hasrun = false;
 
 TimedAction timedNmea6 = TimedAction(155, collectNmea6); // 6 times per second (155 close enough) / (vario/s is dependant on this)
 
+
 #if defined(VARIO)
 Average<float> nmea_varioave(6);
 Average<float> nmea_altitudeave(6); //fixed values i.c.w. timed action
 TimedAction readVario = TimedAction(VARIOREADMS, readVarioPressure); //processor to fast.
+
 MS5611 baro(BAROADDR);
 #if defined(VARIO2)
 MS5611 baro_2(BAROADDR2);
@@ -85,17 +86,9 @@ MPU6050 accelgyro;
 HMC5883L mag;
 #endif
 
-#if defined(EPSWIFI)
-SoftwareSerial serialEPS(WIFIRX_PIN, WIFITX_PIN); //board pin 2, 3 also
-#endif
 
-#if defined(SERIAL1OUTONLY)
-HardwareSerial &serialBT = Serial;
-#else
-SoftwareSerial serialBT(BTRX_PIN, BTTX_PIN);
-#endif
 
-VoltageReference vRef = VoltageReference();
+//VoltageReference vRef = VoltageReference();
 NMEA nmea;
 
 //----------------------------------------------------------------------------//
@@ -114,6 +107,7 @@ void collectNmea6() {
 #if defined(VARIO)
 
   double realAltitude = baro.getAltitude( realPressureAv, conf.qnePressure); //Based on QN
+
   nmea_altitudeave.push(realAltitude);
 
   if (nmea_altitudeave.getCount() > 5) {
@@ -123,20 +117,20 @@ void collectNmea6() {
   }
 
   // Direct call to send ptas1
-
   if (conf.ptas1) { //zero deadband
     float cv = vario * 1.943 * 10 + 200;
     float av = 0;
 
     long altitudeF = realAltitude * 3.28 + 2000;
 
-    #if defined(PTASAVERAGE)
-      av = varioAv * 1.943 * 10 + 200;
-    #endif
+#if defined(PTASAVERAGE)
+    av = varioAv * 1.943 * 10 + 200;
+#endif
 
     nmea.setPTAS1(cv, av, altitudeF);
     sendPTAS1();
   }
+
   checkAdaptiveVario(vario);
   if (fabs(vario) > 0 && fabs(vario) < conf.varioDeadBand / 1000) {
     vario = 0;
@@ -162,6 +156,8 @@ void collectNmea6() {
     ledOff();
   }
 #endif
+
+
 
 }
 
@@ -206,22 +202,17 @@ void initSensors() {
 
 
 #if defined(GPS) && defined(GPSSERIALEVENT)
-void serialEvent() { //Builtin Arduino Function
-  ledOn();  //Led On
-  while (Serial.available()) {
-    char inChar = (char)Serial.read();
-    GPSstuff(inChar);
-  }
-#if defined(GPSTIMER)
-  gi++;
-  if (gi > 3) { //GPS normally sends 4 sentences
+void GPSSERIALEVENT() { //Builtin Arduino Function
+  if (startwait && runloop) {
+    ledOn();  //Led On
 
-    sendSensorData();
-    gi = 0;
-  }
-#endif
-  ledOff(); //Led Off
+    while (SERIALGPS.available()) {
+      char inChar = (char)SERIALGPS.read();
+      GPSstuff(inChar);
+    }
 
+    ledOff(); //Led Off
+  }
 }
 #endif
 
@@ -230,8 +221,8 @@ void sendSensorData() {
   varioAv = nmea_varioave.mean();
   if (conf.lxnav) {
     nmea.setnmeaVarioLXWP0(previousAltitude, nmea_varioave.get(0), nmea_varioave.get(1), nmea_varioave.get(2), nmea_varioave.get(3), nmea_varioave.get(4), nmea_varioave.get(5), getCalcHeading()); //need to gather 6 samples
-    float volt = vRef.readVcc();
-    nmea.setNmeaVarioSentence(realPressureAv, previousAltitude, varioAv, baro.getTemperature(), volt / 1000);
+    //  float volt = vRef.readVcc();
+    nmea.setNmeaVarioSentence(realPressureAv, previousAltitude, varioAv, baro.getTemperature(), 0 / 1000);
   }
 #endif
 #if defined (ACCL)
@@ -251,9 +242,11 @@ void sendSensorData() {
 
 
 void readVarioPressure() {
+
 #if defined(VARIO)
   int32_t pressure;
   pressure = baro.getPressure();
+
 #if defined(VARIO2)
   int32_t pressure2;
   int32_t pressure1t;
@@ -263,21 +256,22 @@ void readVarioPressure() {
 #if defined(VARIO2LEASTDEV)
   int32_t diff = rawPressurePrev - pressure;
   int32_t diff2 = rawPressurePrev2 - pressure2;
-  int32_t sendiff1 = pressure - pressure2;
-  int32_t sendiff2 = pressure2 - pressure;
 
   //alter the sensor reading
   if (fabs(diff) > fabs(diff2)) { //if the primary has more deviation use the deviation of the secondary sensor
     pressure1t =  rawPressurePrev + diff2;
     pressure2t = pressure2;
+
   } else {
     pressure2t = rawPressurePrev2 + diff;
     pressure1t = pressure;
+
   }
   rawPressurePrev = pressure;
   rawPressurePrev2 = pressure2;
   pressure = (pressure1t + pressure2t) / 2;
-  
+
+
 #else
 
   pressure = (pressure + pressure2) / 2;
@@ -286,7 +280,10 @@ void readVarioPressure() {
 #endif
 
   realPressureAv = (conf.variosmooth * realPressureAv + pressure) / (conf.variosmooth + 1);
+
 #endif
+
+
 }
 
 void runOnce() {
@@ -305,38 +302,45 @@ void runOnce() {
 
 
 void setup() {
-  Wire.setClock(400000UL);
-  Serial.begin(SERIAL1BAUD); //for the gps
+#if defined(DEBUG)
+  Serial.println("Setup phase");
+#endif
+  pinMode(13, OUTPUT); //LED
+  ledOn();
+#if defined(SERIAL_MAINBAUD)
+  SERIAL_MAIN.begin(SERIAL_MAINBAUD);
+#endif
+
+#if defined(GPS)
+  SERIALGPS.begin(SERIALGPSBAUD); //for the gps
+#endif
   Wire.begin();
 
-#if defined(EPSWIFI)
+#if defined(ESPWIFI)
   pinMode(WIFIEN_PIN, OUTPUT);
   if (conf.bluetoothOnly) {
     digitalWrite(WIFIEN_PIN, LOW);
   } else {
     digitalWrite(WIFIEN_PIN, HIGH);
   }
-  serialEPS.begin(EPSWIFIBAUD); //need for speed
+  SERIALESP.begin(ESPWIFIBAUD); //need for speed
 #endif
 
-#if defined(SERIALBT)
-  serialBT.begin(SERIALBTBAUD);
-#endif
 
-  pinMode(13, OUTPUT); //LED
-
-  ledOn();
   getConfig();
 
   initSensors();
   if (!conf.bluetoothOnly) {
-#if defined(EPSAT)
+#if defined(ESPAT)
     setSendData();
 #endif
   }
 
   ledOff(); //If the led stays on, the sensors failed to init
-  vRef.begin(VREFCAL);
+  //vRef.begin(VREFCAL);
+#if defined(DEBUG)
+  Serial.println("Finished Setup phase");
+#endif
 
 }
 
@@ -357,15 +361,19 @@ void loop() {
 #if defined(VARIO)
     readVarioPressure();
     int32_t alt =   baro.getAltitude( realPressureAv, conf.qnePressure);
+
     nmea_altitudeave.push(alt);
 #endif
   }
 
 #if defined(CONFIGOPT)
-  if (serialBT.available()) {
-    char inChar = serialBT.read();
+  if (SERIAL_MAIN.available()) {
+    char inChar = SERIAL_MAIN.read();
     getConfVal(inChar);
+
   }
+#else
+  getDefaultConfig();
 
 #endif
 
@@ -375,6 +383,7 @@ void loop() {
 
 #if defined(VARIO)
     readVario.check();
+
 #endif
 
 #if defined (ACCL)
@@ -385,7 +394,6 @@ void loop() {
     if (conf.buzzer ) {
       makeSound(vario);
     }
-
 #endif
   }
 

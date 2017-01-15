@@ -13,7 +13,7 @@
 
 void sendData(char *message, int id);
 
-void setEPSMulti();
+void setESPMulti();
 
 void setESPBroadCast();
 void setSendData();

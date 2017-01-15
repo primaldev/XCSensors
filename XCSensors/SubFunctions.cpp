@@ -35,15 +35,13 @@ float testvario = 0;
 #endif
 //
 
-#define GPSBUFFER 100
+#define GPSBUFFER 120
 
 void GPSstuff(char c) {                                         // GPSbuffer[] is global
   static int i;                                              //   persistent within function scope
   static char q;
   static bool flag = false;
   static char GPSbuffer[GPSBUFFER];                                   // GPS serial line input buffer
-  bool startSen = false;                                      // Start of NMEA Code
-  bool endSen = false;                                        // End NMEA Code
   String nmeaCode;
   q = c;
 

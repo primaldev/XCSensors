@@ -30,14 +30,7 @@ extern NMEA nmea;
 //#if defined(DHT)
 extern dht dhts;
 //#endif
-extern SoftwareSerial serialEPS;
 
-
-#if defined(SERIAL1OUTONLY)
-extern HardwareSerial &serialBT;
-#else
-extern SoftwareSerial serialBT;
-#endif
 
 
 

@@ -19,7 +19,7 @@ void saveConfigToEEPROM();
 void setDefaultConfig();
 String getStringFromBool(bool bval);
 void getConfigVars() ;
-
+void getDefaultConfig();
 
 typedef struct {
   bool hasSavedtoEEPROM;
@@ -28,8 +28,8 @@ typedef struct {
   int humidChannel;
   int AcclChannel;
   int magChannel;
-  char ssid[32];
-  char password[32];
+  //char ssid[32];
+  //char password[32];
   double qnePressure;
   int varioDeadBand;
   int magDeclination;
@@ -53,3 +53,4 @@ typedef struct {
 } conf_t;
 
 extern conf_t conf;
+
