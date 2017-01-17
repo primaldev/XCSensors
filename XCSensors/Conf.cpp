@@ -28,7 +28,7 @@ void getConfig() { //load default config values from EEPROM
     conf.hasSavedtoEEPROM = true;
     setDefaultConfig();
     getConfigFromEEPROM();
-    
+
   }
 
   getConfigVars();
@@ -52,8 +52,8 @@ void getDefaultConfig() {
   conf.humidChannel = 3;
   conf.magChannel = 1;
   conf.AcclChannel = 4;
-//  strcpy(conf.ssid, "XCSensors");
-//  strcpy(conf.password, "thereisnospoon");
+  //  strcpy(conf.ssid, "XCSensors");
+  //  strcpy(conf.password, "thereisnospoon");
   conf.magDeclination = 0; //in Radians. Find your declination here: http://www.magnetic-declination.com/
   conf.qnePressure = 101325; //QNH value to calculate vario Altitude
   conf.varioDeadBand = 100; // X 1000 levels lower than this = 0. (ignored by ptas1)
@@ -67,9 +67,9 @@ void getDefaultConfig() {
   conf.varioAudioDeadBand = 200; //X 1000
   conf.varioAudioSinkDeadBand = 300;  //X 1000 and absolute value
   conf.advTriggerTime = 1500; // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
-  conf.advRelaxTime= 30000;  // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
-  conf.advMinSmooth=10; // lowest level for conf.variosmooth
-  conf.advMaxSmooth=35;// highest level for conf.variosmooth
+  conf.advRelaxTime = 30000; // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
+  conf.advMinSmooth = 10; // lowest level for conf.variosmooth
+  conf.advMaxSmooth = 35; // highest level for conf.variosmooth
 }
 
 
@@ -87,8 +87,8 @@ void printaf(int n) {
     case 5: SERIAL_MAIN.print(F("5) Humid Sensor Channel: ")); break;
     case 6: SERIAL_MAIN.print(F("6) Mag track Channel: ")); break;
     case 7: SERIAL_MAIN.print(F("7) Accl Channel: ")); break;
- //   case 8: SERIAL_MAIN.print(F("8) Wifi SSID: ")); break;
-//    case 9: SERIAL_MAIN.print(F("9) Wifi Password: ")); break;
+    //   case 8: SERIAL_MAIN.print(F("8) Wifi SSID: ")); break;
+    //    case 9: SERIAL_MAIN.print(F("9) Wifi Password: ")); break;
     case 10: SERIAL_MAIN.print(F("10) Magentic Declination: ")); break;
     case 11: SERIAL_MAIN.print(F("11) QNE Pressure: ")); break;
     case 12: SERIAL_MAIN.print(F("12) Vario deadband (x1000): ")); break;
@@ -171,12 +171,12 @@ void getConfigVars() { // order is not that important
   printaf(7);
   SERIAL_MAIN.print(conf.AcclChannel);
   printtf();
-//  printaf(8);
-//  SERIAL_MAIN.print(conf.ssid);
-//  printtf();
-//  printaf(9);
-//  SERIAL_MAIN.print(conf.password);
- // printtf();
+  //  printaf(8);
+  //  SERIAL_MAIN.print(conf.ssid);
+  //  printtf();
+  //  printaf(9);
+  //  SERIAL_MAIN.print(conf.password);
+  // printtf();
   printaf(10);
   SERIAL_MAIN.print(conf.magDeclination);
   printtf();
@@ -219,8 +219,8 @@ void getConfigVars() { // order is not that important
   printaf(27);
   SERIAL_MAIN.print(conf.advMaxSmooth);
   printtf();
-  
-   if (conf.bluetoothOnly) {
+
+  if (conf.bluetoothOnly) {
     digitalWrite(WIFIEN_PIN, LOW);
   } else {
     digitalWrite(WIFIEN_PIN, HIGH);
@@ -238,8 +238,8 @@ String getStringFromBool(bool bval) { //TODO: process Boolean values
 }
 
 void getConfigFromEEPROM() {
- EEPROM.get(eeAddress, conf);
-  
+  EEPROM.get(eeAddress, conf);
+
 }
 
 void saveConfigToEEPROM() {
@@ -287,7 +287,14 @@ void setConf(int varname, char *value) {
     case 106: resetACCLcompVal(); // quick set the ACCL to 0
     case 101: getConfigVars(); break; // get config for app
     case 200: runloop = false; break; //stop
-    case 201: runloop = true; break; //start
+    case 201:
+      runloop = true;
+#if defined(BTSLEEP)
+        if(!conf.bluetoothOnly) {      
+          digitalWrite(BTENPIN, LOW); //Make BT go ZZ   
+        }   
+#endif
+      break; //start
     default:
 
       getConfigVars();

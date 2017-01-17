@@ -39,9 +39,11 @@
 */
 
 // Compiler values
-// 
+//
 
 //#define DEBUG
+#define STARTDELAY 8000 //the time delay before the process starts
+
 #define CONFIGOPT //enable configuration option (EEPROM required) Teensy LC EEPROM small 128 bytes.
 #define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. If disabled,
 // it can be used by an external app and multiple values can be sent, handy for programs eg: <1=on>
@@ -61,9 +63,9 @@
 
 
 /*
- * Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
- * It does it by detecting "triggers". 
- */
+   Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
+   It does it by detecting "triggers".
+*/
 #define ADAPTIVEVARIO //Adapts the vario low pass filter aka. 
 #define ADVLOWTRIGGER 0.08 // level at witch low trigger are checked
 
@@ -78,26 +80,33 @@
 
 #define DHT
 #define DHTTYPE DHT11   //for the library
-#define MAG 
+#define MAG
 #define DHT11_PIN 17
-#define ACCL 
+#define ACCL
 #define ACCLREADMS 100 //how often to read the accelerom
 #define ACCLSMOOTH 10 //Lowpass filter level
 
-//Enable Serial Bluetooth
+
 //SerialOut can be used to connect to a Kobo serial port or a HC-05, no changes needed
-#define SERIAL_MAIN Serial
-//#define SERIAL_MAINBAUD 38400  //do not use with Serial (USB) it will hang
+#define SERIAL_MAIN Serial1
+#define SERIAL_MAINBAUD 38400  //do not use with Serial (USB) it will hang
+
+/* set HC-05 in sleep mode (via BTPINENABLE) after startup
+  if the stop command is sent during startup, it will delay the sleep mode
+  until start command.
+*/
+#define BTENPIN 2 //pin to enable HC-05
+#define BTSLEEP
 /*Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400)
   AT+UART=38400,1,0 //115200 had problems
-  AT+NAME=iXsensors0A 
+  AT+NAME=iXsensors0A
   AT+PSWD=1234
 */
 
 
-/* 
+/*
   As a workaround for abysmally bad standardized method of NMEA sentences, different sentences can be sent
-  to different ports. This way you can implement the proprietary drivers for the different sensors 
+  to different ports. This way you can implement the proprietary drivers for the different sensors
   (LXNAV for the vario and Vega for the humid sensor). The passthrough option in XCSoar does not always work.
 */
 #define CHANNEL1PORT 4353  //udp ports for the designated channels
@@ -116,7 +125,7 @@
 
 
 
-////////////////////set Fixes/////////////////////////
+////////////////////Set Configuration logic/////////////////////////
 
 
 #if !defined(GPS)
@@ -129,5 +138,9 @@
 
 #if !defined(ESPWIFI)
 #undef ESPAT
+#endif
+
+#if !defined(BTENPIN)
+#undef BTSLEEP
 #endif
 

@@ -291,6 +291,11 @@ void runOnce() {
 #if defined(ACCL)
     resetACCLcompVal();
 #endif
+#if defined(BTSLEEP)
+   if (runloop && !conf.bluetoothOnly) {
+     digitalWrite(BTENPIN, LOW); //Make BT go ZZ
+   }
+#endif
   }
   hasrun = true;
 }
@@ -327,6 +332,11 @@ void setup() {
 #endif
 
 
+#if defined(BTENPIN)
+  pinMode(BTENPIN, OUTPUT);
+  digitalWrite(BTENPIN, HIGH);
+#endif 
+
   getConfig();
 
   initSensors();
@@ -352,7 +362,7 @@ void loop() {
 
   long startTime = millis();
 
-  if ( startTime > 8000) {    //
+  if ( startTime > STARTDELAY) {    //
     startwait = true;
     runOnce();
   }
