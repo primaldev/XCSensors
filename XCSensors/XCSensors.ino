@@ -367,6 +367,7 @@ void loop() {
     runOnce();
   }
 
+
   if (!startwait) { //init the tables so it won't shock the system
 #if defined(VARIO)
     readVarioPressure();
@@ -390,6 +391,13 @@ void loop() {
   if (startwait && runloop) {  //Give the sensors time to warm up
 
     timedNmea6.check();
+
+#if defined(GPS) && !defined(GPSSERIALEVENT)
+if (SERIALGPS.available()) {
+      char inChar = (char)SERIALGPS.read();
+      GPSstuff(inChar);
+    }
+#endif
 
 #if defined(VARIO)
     readVario.check();

@@ -317,28 +317,29 @@ void makeSound(float vario) {
 
 void checkAdaptiveVario(double vario){
 #if defined(ADAPTIVEVARIO)
-  if (fabs(vario) > float(ADVLOWTRIGGER )/1000 && !vTriggerd) { //fabs abs but can handle floats
+  if (fabs(vario) > ADVLOWTRIGGER && !vTriggerd) { //fabs abs but can handle floats
      vtime=millis();
      vTriggerd=true;
-
   }
 
   int diff = millis() - vtime;
   
-  if (vTriggerd && fabs(vario) < float(ADVLOWTRIGGER )/1000 && diff < conf.advTriggerTime)  { //zero
+  if (vTriggerd && fabs(vario) < ADVLOWTRIGGER  && diff < conf.advTriggerTime)  { //zero   
      if(conf.variosmooth <= conf.advMaxSmooth ) {
        conf.variosmooth++;
        vTriggerd=false;
        vtime=millis();
-
      }
   }
 
-  if (fabs(vario) < float(ADVLOWTRIGGER )/1000 && !vTriggerd && diff >  conf.advRelaxTime) {
+  if (diff > conf.advTriggerTime && vTriggerd) { //overflow reset
+    vTriggerd=false;
+  }
+
+  if (fabs(vario) < float(ADVLOWTRIGGER ) && !vTriggerd && diff >  conf.advRelaxTime) {
       if(conf.variosmooth > conf.advMinSmooth ) {
         conf.variosmooth--;
-        vtime=millis();
-       
+        vtime=millis();       
       }
   }
   

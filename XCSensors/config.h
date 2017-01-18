@@ -50,7 +50,7 @@
 
 #define SERIALGPS Serial2
 #define GPS
-#define GPSSERIALEVENT serialEvent2 //use SerialEvent()
+//#define GPSSERIALEVENT serialEvent2 //use SerialEvent(). Carefull as this might interupt other nmea sentences
 #define SERIALGPSBAUD 9600 // serial1 speed
 
 #define VARIO
@@ -96,7 +96,7 @@
   until start command.
 */
 #define BTENPIN 2 //pin to enable HC-05
-#define BTSLEEP
+//#define BTSLEEP
 /*Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400)
   AT+UART=38400,1,0 //115200 had problems
   AT+NAME=iXsensors0A

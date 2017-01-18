@@ -30,18 +30,16 @@ void NMEA::setMagneticHeading(float magneticHeading) {
      3) Checksum
   */
 
-  char t_NmeaMag[18] = "$HCHDM,";
-  char t_mag[6];
+  char t_NmeaMag[22] = "$HCHDM,";
+  char t_mag[5];
   char t_tail[4] = ",M,";
 
   dtostrf(magneticHeading, 3, 1, t_mag);
 
   strcat(t_NmeaMag, t_mag );
   strcat(t_NmeaMag, t_tail);
-
+  strcat(t_NmeaMag, "*");
   getCRC(t_NmeaMag);
-
-  strcat(t_NmeaMag, "\*");
   strcat(t_NmeaMag, t_check);
 
 
@@ -62,18 +60,15 @@ void NMEA::setGforce(float gforce) { //$FBG does not exist, unable to find a gfo
       2) Checksum
   */
 
-  char t_NmeaAgforce[18] = "$XCSG,";
-  char t_gforce[5];
+  char t_NmeaAgforce[22] = "$XCSG,";
+  char t_gforce[4];
   char t_tail[2] = ",";
 
   dtostrf(gforce, 1, 1, t_gforce);
   strcat(t_NmeaAgforce, t_gforce );
   strcat(t_NmeaAgforce, t_tail);
-
+  strcat(t_NmeaAgforce, "*");
   getCRC(t_NmeaAgforce);
-
-  strcat(t_NmeaAgforce, "\*");
-
   strcat(t_NmeaAgforce, t_check);
 
   strcpy(nmeaGforce, t_NmeaAgforce);
@@ -82,7 +77,7 @@ void NMEA::setGforce(float gforce) { //$FBG does not exist, unable to find a gfo
 
 void NMEA::setPTAS1(float cv, float av, long altitudeF) {
   //$PTAS1,xxx,yyy,zzzzz,aaa*CS<CR><LF>
-  char t_nmeaPTAS1[40] = "$PTAS1,";
+  char t_nmeaPTAS1[44] = "$PTAS1,";
   char t_av[7];
   char t_cv[7];
   char t_altitudeF[10];
@@ -102,7 +97,7 @@ void NMEA::setPTAS1(float cv, float av, long altitudeF) {
 
 
   strcat(t_nmeaPTAS1, t_tail);
-  strcat(t_nmeaPTAS1, "\*");
+  strcat(t_nmeaPTAS1, "*");
 
   getCRC(t_nmeaPTAS1);
   strcat(t_nmeaPTAS1, t_check);
@@ -126,7 +121,7 @@ void NMEA::setnmeaVarioLXWP0(double varioAlt, float a, float b, float c, float d
   // e.g.:
   // $LXWP0,Y,222.3,1665.5,1.71,,,,,,239,174,10.1
 
-  char t_nmeaVarioLXWP0[60] = "$LXWP0,N,,";
+  char t_nmeaVarioLXWP0[64] = "$LXWP0,N,,";
   char t_vario[5];
   char t_alt[9];
   char t_mag[6];
@@ -160,7 +155,7 @@ void NMEA::setnmeaVarioLXWP0(double varioAlt, float a, float b, float c, float d
 
 
   strcat(t_nmeaVarioLXWP0, t_tail);
-  strcat(t_nmeaVarioLXWP0, "\*");
+  strcat(t_nmeaVarioLXWP0, "*");
 
 
   getCRC(t_nmeaVarioLXWP0);
@@ -177,7 +172,7 @@ void NMEA::setnmeaVarioLXWP0(double varioAlt, float a, float b, float c, float d
 void NMEA::setNmeaVarioSentence(long rawPressure, double varioAlt, float climbRate, float temperature, float voltage) {
   //https://github.com/LK8000/LK8000/blob/master/Docs/LK8EX1.txt
   //float t_temp = temperature/100;// not correct anymore
-  char t_nmeaVario[40] = "$LK8EX1,";
+  char t_nmeaVario[44] = "$LK8EX1,";
   char t_climbRate[6];
   char t_pressure[7];
   char t_alt[6];
@@ -207,7 +202,7 @@ void NMEA::setNmeaVarioSentence(long rawPressure, double varioAlt, float climbRa
   strcat(t_nmeaVario, t_voltage);
 
   strcat(t_nmeaVario, t_tail);
-  strcat(t_nmeaVario, "\*");
+  strcat(t_nmeaVario, "*");
 
   getCRC(t_nmeaVario);
 
@@ -221,7 +216,7 @@ void NMEA::setNmeaVarioSentence(long rawPressure, double varioAlt, float climbRa
 
 void NMEA::setNmeaHumidSentence(int temperatureH11Kelvin, int humidity) {
 
-  char t_nmeaHumid[20] = "$PDVVT,";
+  char t_nmeaHumid[22] = "$PDVVT,";
   char t_temp[6];
   char t_humidity[3];
   char t_tail[2] = ",";
@@ -236,7 +231,7 @@ void NMEA::setNmeaHumidSentence(int temperatureH11Kelvin, int humidity) {
 
 
   strcat(t_nmeaHumid, t_tail);
-  strcat(t_nmeaHumid, "\*");
+  strcat(t_nmeaHumid, "*");
 
   getCRC(t_nmeaHumid);
 
