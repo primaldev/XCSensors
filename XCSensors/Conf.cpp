@@ -1,5 +1,5 @@
 /*
-  XCsensors by Marco van Zoest
+  XCSensors by Marco van Zoest
 
   www.primaldev.nl
   www.primalcode.nl
@@ -17,6 +17,8 @@
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
 #include "SubFunctions.h"
+
+
 
 float f = 0.00f;
 int eeAddress = 0;
@@ -58,7 +60,7 @@ void getDefaultConfig() {
   conf.qnePressure = 101325; //QNH value to calculate vario Altitude
   conf.varioDeadBand = 100; // X 1000 levels lower than this = 0. (ignored by ptas1)
   conf.wifiMultiPort = true; //use different ports for NMEA sentences, or only the gps port
-  conf.bluetoothOnly = true; //only send data to BT. reset needed to start WIFI
+  conf.SerialMain = true; //only send data to the main serial. reset needed to start WIFI
   conf.ptas1 = true; // send ptas1 nmea, uses the gps channel (once every 155ms)
   conf.lxnav = true; //send vario lxnav sentence
   conf.accloffset = 0; //manual offset for accl x 1000
@@ -72,37 +74,36 @@ void getDefaultConfig() {
   conf.advMaxSmooth = 35; // highest level for conf.variosmooth
 }
 
-
-
+#if defined (SERIAL_CONFIG)
 #if defined(HUMANCONFIG)
 
 
 void printaf(int n) {
   switch (n) {
 
-    case 1: SERIAL_MAIN.print(F("1) Bluetooth Only: ")); break;
-    case 2: SERIAL_MAIN.print(F("2) Wifi Multiport: ")); break;
-    case 3: SERIAL_MAIN.print(F("3) GPS Channel: ")); break;
-    case 4: SERIAL_MAIN.print(F("4) Vario Channel: ")); break;
-    case 5: SERIAL_MAIN.print(F("5) Humid Sensor Channel: ")); break;
-    case 6: SERIAL_MAIN.print(F("6) Mag track Channel: ")); break;
-    case 7: SERIAL_MAIN.print(F("7) Accl Channel: ")); break;
-    //   case 8: SERIAL_MAIN.print(F("8) Wifi SSID: ")); break;
-    //    case 9: SERIAL_MAIN.print(F("9) Wifi Password: ")); break;
-    case 10: SERIAL_MAIN.print(F("10) Magentic Declination: ")); break;
-    case 11: SERIAL_MAIN.print(F("11) QNE Pressure: ")); break;
-    case 12: SERIAL_MAIN.print(F("12) Vario deadband (x1000): ")); break;
-    case 14: SERIAL_MAIN.print(F("14) Send PTAS: ")); break;
-    case 16: SERIAL_MAIN.print(F("16) Send LXNAV: ")); break;
-    case 17: SERIAL_MAIN.print(F("17) Accl manual offset x1000: ")); break;
-    case 18: SERIAL_MAIN.print(F("18) Vario smoothness level: ")); break;
-    case 20: SERIAL_MAIN.print(F("20) Enable Vario Audio: ")); break;
-    case 21: SERIAL_MAIN.print(F("21) Vario Audio asc deadband x1000: ")); break;
-    case 22: SERIAL_MAIN.print(F("22) Vario audio sink deadband x1000: ")); break;
-    case 24: SERIAL_MAIN.print(F("24) Adaptive vario trigger time: ")); break;
-    case 25: SERIAL_MAIN.print(F("25) Adaptive vario relax time: ")); break;
-    case 26: SERIAL_MAIN.print(F("26) Adaptive vario minimum smooth level: ")); break;
-    case 27: SERIAL_MAIN.print(F("27) Adaptive vario maximum smooth level: ")); break;
+    case 1: SERIAL_CONFIG.print(F("1) Serial Main Enable ")); break;
+    case 2: SERIAL_CONFIG.print(F("2) Wifi Multiport: ")); break;
+    case 3: SERIAL_CONFIG.print(F("3) GPS Channel: ")); break;
+    case 4: SERIAL_CONFIG.print(F("4) Vario Channel: ")); break;
+    case 5: SERIAL_CONFIG.print(F("5) Humid Sensor Channel: ")); break;
+    case 6: SERIAL_CONFIG.print(F("6) Mag track Channel: ")); break;
+    case 7: SERIAL_CONFIG.print(F("7) Accl Channel: ")); break;
+    //   case 8: SERIAL_CONFIG.print(F("8) Wifi SSID: ")); break;
+    //    case 9: SERIAL_CONFIG.print(F("9) Wifi Password: ")); break;
+    case 10: SERIAL_CONFIG.print(F("10) Magentic Declination: ")); break;
+    case 11: SERIAL_CONFIG.print(F("11) QNE Pressure: ")); break;
+    case 12: SERIAL_CONFIG.print(F("12) Vario deadband (x1000): ")); break;
+    case 14: SERIAL_CONFIG.print(F("14) Send PTAS: ")); break;
+    case 16: SERIAL_CONFIG.print(F("16) Send LXNAV: ")); break;
+    case 17: SERIAL_CONFIG.print(F("17) Accl manual offset x1000: ")); break;
+    case 18: SERIAL_CONFIG.print(F("18) Vario smoothness level: ")); break;
+    case 20: SERIAL_CONFIG.print(F("20) Enable Vario Audio: ")); break;
+    case 21: SERIAL_CONFIG.print(F("21) Vario Audio asc deadband x1000: ")); break;
+    case 22: SERIAL_CONFIG.print(F("22) Vario audio sink deadband x1000: ")); break;
+    case 24: SERIAL_CONFIG.print(F("24) Adaptive vario trigger time: ")); break;
+    case 25: SERIAL_CONFIG.print(F("25) Adaptive vario relax time: ")); break;
+    case 26: SERIAL_CONFIG.print(F("26) Adaptive vario minimum smooth level: ")); break;
+    case 27: SERIAL_CONFIG.print(F("27) Adaptive vario maximum smooth level: ")); break;
 
 
   }
@@ -110,34 +111,34 @@ void printaf(int n) {
 }
 
 void printtf() {
-  SERIAL_MAIN.println();
+  SERIAL_CONFIG.println();
 
 }
 
 void printhd() {
-  SERIAL_MAIN.println();
-  SERIAL_MAIN.println(F("XCSensors Config options:"));
-  SERIAL_MAIN.println(F("200 - Stop Feed"));
-  SERIAL_MAIN.println(F("201 - Start Feed"));
-  SERIAL_MAIN.println(F("0 - Default values"));
-  SERIAL_MAIN.println(F("101 - This menu"));
-  SERIAL_MAIN.println(F("100 - Save to EEPROM"));
-  SERIAL_MAIN.println(F("106 - Calibrate Accelerometer"));
-  SERIAL_MAIN.println(F("Use 1 for on and 0 for off"));
-  SERIAL_MAIN.println();
-  SERIAL_MAIN.println(F("XCSensors Configuration:"));
-  SERIAL_MAIN.println();
+  SERIAL_CONFIG.println();
+  SERIAL_CONFIG.println(F("XCSensors Config options:"));
+  SERIAL_CONFIG.println(F("200 - Stop Feed"));
+  SERIAL_CONFIG.println(F("201 - Start Feed"));
+  SERIAL_CONFIG.println(F("0 - Default values"));
+  SERIAL_CONFIG.println(F("101 - This menu"));
+  SERIAL_CONFIG.println(F("100 - Save to EEPROM"));
+  SERIAL_CONFIG.println(F("106 - Calibrate Accelerometer"));
+  SERIAL_CONFIG.println(F("Use 1 for on and 0 for off"));
+  SERIAL_CONFIG.println();
+  SERIAL_CONFIG.println(F("XCSensors Configuration:"));
+  SERIAL_CONFIG.println();
 }
 
 #else
 void printaf(int n) {
 
-  SERIAL_MAIN.print(F("<"));
-  SERIAL_MAIN.print(n);
-  SERIAL_MAIN.print(F("="));
+  SERIAL_CONFIG.print(F("<"));
+  SERIAL_CONFIG.print(n);
+  SERIAL_CONFIG.print(F("="));
 }
 void printtf() {
-  SERIAL_MAIN.println(F(">"));
+  SERIAL_CONFIG.println(F(">"));
 }
 
 void printhd() {
@@ -145,87 +146,92 @@ void printhd() {
 }
 
 #endif
-
+#endif
 
 
 void getConfigVars() { // order is not that important
+  
+#if defined (SERIAL_CONFIG)
   printhd();
   printaf(1);
-  SERIAL_MAIN.print( getStringFromBool(conf.bluetoothOnly));
+  SERIAL_CONFIG.print( getStringFromBool(conf.SerialMain));
   printtf();
   printaf(2);
-  SERIAL_MAIN.print(getStringFromBool(conf.wifiMultiPort));
+  SERIAL_CONFIG.print(getStringFromBool(conf.wifiMultiPort));
   printtf();
   printaf(3);
-  SERIAL_MAIN.print(conf.GPSChannel);
+  SERIAL_CONFIG.print(conf.GPSChannel);
   printtf();
   printaf(4);
-  SERIAL_MAIN.print(conf.varioChannel);
+  SERIAL_CONFIG.print(conf.varioChannel);
   printtf();
   printaf(5);
-  SERIAL_MAIN.print(conf.humidChannel);
+  SERIAL_CONFIG.print(conf.humidChannel);
   printtf();
   printaf(6);
-  SERIAL_MAIN.print(conf.magChannel);
+  SERIAL_CONFIG.print(conf.magChannel);
   printtf();
   printaf(7);
-  SERIAL_MAIN.print(conf.AcclChannel);
+  SERIAL_CONFIG.print(conf.AcclChannel);
   printtf();
   //  printaf(8);
-  //  SERIAL_MAIN.print(conf.ssid);
+  //  SERIAL_CONFIG.print(conf.ssid);
   //  printtf();
   //  printaf(9);
-  //  SERIAL_MAIN.print(conf.password);
+  //  SERIAL_CONFIG.print(conf.password);
   // printtf();
   printaf(10);
-  SERIAL_MAIN.print(conf.magDeclination);
+  SERIAL_CONFIG.print(conf.magDeclination);
   printtf();
   printaf(11);
-  SERIAL_MAIN.print(String(conf.qnePressure));
+  SERIAL_CONFIG.print(String(conf.qnePressure));
   printtf();
   printaf(12);
-  SERIAL_MAIN.print(conf.varioDeadBand);
+  SERIAL_CONFIG.print(conf.varioDeadBand);
   printtf();
   printaf(14);
-  SERIAL_MAIN.print(conf.ptas1);
+  SERIAL_CONFIG.print(conf.ptas1);
   printtf();
   printaf(16);
-  SERIAL_MAIN.print(conf.lxnav);
+  SERIAL_CONFIG.print(conf.lxnav);
   printtf();
   printaf(17);
-  SERIAL_MAIN.print(conf.accloffset);
+  SERIAL_CONFIG.print(conf.accloffset);
   printtf();
   printaf(18);
-  SERIAL_MAIN.print(conf.variosmooth);
+  SERIAL_CONFIG.print(conf.variosmooth);
   printtf();
   printaf(20);
-  SERIAL_MAIN.print(conf.buzzer);
+  SERIAL_CONFIG.print(conf.buzzer);
   printtf();
   printaf(21);
-  SERIAL_MAIN.print(conf.varioAudioDeadBand);
+  SERIAL_CONFIG.print(conf.varioAudioDeadBand);
   printtf();
   printaf(22);
-  SERIAL_MAIN.print(conf.varioAudioSinkDeadBand);
+  SERIAL_CONFIG.print(conf.varioAudioSinkDeadBand);
   printtf();
   printaf(24);
-  SERIAL_MAIN.print(conf.advTriggerTime);
+  SERIAL_CONFIG.print(conf.advTriggerTime);
   printtf();
   printaf(25);
-  SERIAL_MAIN.print( conf.advRelaxTime);
+  SERIAL_CONFIG.print( conf.advRelaxTime);
   printtf();
   printaf(26);
-  SERIAL_MAIN.print( conf.advMinSmooth);
+  SERIAL_CONFIG.print( conf.advMinSmooth);
   printtf();
   printaf(27);
-  SERIAL_MAIN.print(conf.advMaxSmooth);
+  SERIAL_CONFIG.print(conf.advMaxSmooth);
   printtf();
-
-  if (conf.bluetoothOnly) {
+#if defined(WIFIEN_PIN)
+  if (conf.SerialMain) {
     digitalWrite(WIFIEN_PIN, LOW);
   } else {
     digitalWrite(WIFIEN_PIN, HIGH);
   }
-
+ #endif
+#endif
+//#if defined(LCDMENU) //here be LCD
+//
 }
 
 
@@ -260,7 +266,7 @@ void setConf(int varname, char *value) {
 
   switch (varname) {
     case 0: setDefaultConfig(); break;//load defaults
-    case 1: conf.bluetoothOnly = getBoolFromVal(value); break;
+    case 1: conf.SerialMain = getBoolFromVal(value); break;
     case 2: conf.wifiMultiPort = getBoolFromVal(value); break;
     case 3: conf.GPSChannel = atoi(value); break;
     case 4: conf.varioChannel = atoi(value); break;
@@ -290,7 +296,7 @@ void setConf(int varname, char *value) {
     case 201:
       runloop = true;
 #if defined(BTSLEEP)
-        if(!conf.bluetoothOnly) {      
+        if(!conf.SerialMain) {      
           digitalWrite(BTENPIN, LOW); //Make BT go ZZ   
         }   
 #endif

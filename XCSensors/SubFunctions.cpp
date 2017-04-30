@@ -1,5 +1,5 @@
 /*
-  XCsensors by Marco van Zoest
+  XCSensors by Marco van Zoest
 
   www.primaldev.nl
   www.primalcode.nl
@@ -245,20 +245,23 @@ void sendNmeaAll() {
 }
 
 #if defined(BUZZER)
+
 void makeSound(float vario) {
   int pulse;
 
 #if defined(TESTBUZZER)
   vario = testvario;
   int tpassed = millis() - btime;
-  if (tpassed > 5000) {
-    testvario = testvario + 0.5;
+  if (tpassed > 2000) {
+    testvario = testvario + 0.1;
     btime = millis();
   }
 
   if (testvario > 9 ) {
     testvario = 0;
   }
+
+  Serial.println(vario);
 #endif
 
   if (vario > 9) {
@@ -269,10 +272,11 @@ void makeSound(float vario) {
   int variof = (fabs(vario) * 200 ) + 800;
 
   if (vario >= double(conf.varioAudioDeadBand) / 1000) {
+  
+      pulse = 2000 / (vario * 10) + 100;
     
-    pulse = 600 / vario;
   } else {
-    pulse = 600;
+    pulse = 400;
   }
 
   if (playtone) {
@@ -281,7 +285,7 @@ void makeSound(float vario) {
       tone(BUZZPIN, variof);
       playtone = false;
     } else if (vario < -double(conf.varioAudioSinkDeadBand) / 1000 ) {
-      pulse = 600;
+      pulse = 400;
       tone(BUZZPIN, 200);
       playtone = false;
     } else {
@@ -300,7 +304,7 @@ void makeSound(float vario) {
       toneon = false;
       playtone = false;
       pinMode(BUZZPIN, INPUT);
-      ttime = millis() - 50;
+      ttime = millis() - 80;
     } else  {
       toneon = true;
       playtone = true;

@@ -1,5 +1,5 @@
 /*
-  XCsensors by Marco van Zoest
+  XCSensors by Marco van Zoest
 
   www.primaldev.nl
   www.primalcode.nl
@@ -34,7 +34,7 @@ typedef struct {
   int varioDeadBand;
   int magDeclination;
   bool wifiMultiPort;
-  bool bluetoothOnly;
+  bool SerialMain;
   bool ptas1;
 
   bool lxnav;

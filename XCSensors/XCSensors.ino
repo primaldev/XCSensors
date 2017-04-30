@@ -1,6 +1,6 @@
 
 /*
-  XCsensors by Marco van Zoest
+  XCSensors by Marco van Zoest
 
   www.primaldev.nl
   www.primalcode.nl
@@ -103,6 +103,12 @@ void ledOff() {
   digitalWrite(13, LOW);
 }
 
+/*
+ * Collects and process sensor data
+ * Runs every 155 ms a.k.a 6 times per second
+ * Sensor readings are processed at different timed actions
+ * this function collects that data. 
+ */
 void collectNmea6() {
 #if defined(VARIO)
 
@@ -132,6 +138,7 @@ void collectNmea6() {
   }
 
   checkAdaptiveVario(vario);
+  
   if (fabs(vario) > 0 && fabs(vario) < conf.varioDeadBand / 1000) {
     vario = 0;
   }
@@ -157,8 +164,6 @@ void collectNmea6() {
   }
 #endif
 
-
-
 }
 
 void readACCLSensor() {
@@ -173,9 +178,11 @@ void resetACCLcompVal() {
 #endif
 }
 
-
+/*
+ * Initialize all sensors
+ * 
+ */
 void initSensors() {
-
 #if defined(VARIO)
   baro = MS5611(BAROADDR);
   baro.begin();
@@ -216,6 +223,11 @@ void GPSSERIALEVENT() { //Builtin Arduino Function
 }
 #endif
 
+/*
+ * Sends vario data and collects other sensor data 
+ * before calling sendNmeaAll.
+ */
+
 void sendSensorData() {
 #if defined(VARIO)
   varioAv = nmea_varioave.mean();
@@ -240,6 +252,12 @@ void sendSensorData() {
 
 }
 
+/*
+ * Read barometer sensors. Called by timed action
+ * Uses lowpass filter to produce stable output
+ * In case of dual baro sensors, two options are available:
+ * Average calculation or least deviation. 
+ */
 
 void readVarioPressure() {
 
@@ -283,7 +301,6 @@ void readVarioPressure() {
 
 #endif
 
-
 }
 
 void runOnce() {
@@ -292,7 +309,7 @@ void runOnce() {
     resetACCLcompVal();
 #endif
 #if defined(BTSLEEP)
-   if (runloop && !conf.bluetoothOnly) {
+   if (runloop && !conf.SerialMain) {
      digitalWrite(BTENPIN, LOW); //Make BT go ZZ
    }
 #endif
@@ -320,16 +337,20 @@ void setup() {
   SERIALGPS.begin(SERIALGPSBAUD); //for the gps
 #endif
   Wire.begin();
+  
 
-#if defined(ESPWIFI)
+
+#if defined(SERIALESP)
+#if defined(WIFIEN_PIN)
   pinMode(WIFIEN_PIN, OUTPUT);
-  if (conf.bluetoothOnly) {
+  if (conf.SerialMain) {
     digitalWrite(WIFIEN_PIN, LOW);
   } else {
     digitalWrite(WIFIEN_PIN, HIGH);
   }
-  SERIALESP.begin(ESPWIFIBAUD); //need for speed
-#endif
+#endif //WIFIEN_PIN
+  SERIALESP.begin(SERIALESPBAUD); //need for speed
+#endif //ESPWIFI
 
 
 #if defined(BTENPIN)
@@ -337,14 +358,17 @@ void setup() {
   digitalWrite(BTENPIN, HIGH);
 #endif 
 
+#if defined(CONFIGOPT)
   getConfig();
-
+#else 
+  getDefaultConfig();
+#endif
   initSensors();
-  if (!conf.bluetoothOnly) {
+ 
 #if defined(ESPAT)
     setSendData();
 #endif
-  }
+  
 
   ledOff(); //If the led stays on, the sensors failed to init
   //vRef.begin(VREFCAL);
@@ -377,15 +401,12 @@ void loop() {
 #endif
   }
 
-#if defined(CONFIGOPT)
-  if (SERIAL_MAIN.available()) {
-    char inChar = SERIAL_MAIN.read();
+#if defined(CONFIGOPT) && defined(SERIAL_CONFIG)
+  if (SERIAL_CONFIG.available()) {
+    char inChar = SERIAL_CONFIG.read();
     getConfVal(inChar);
 
-  }
-#else
-  getDefaultConfig();
-
+  } 
 #endif
 
   if (startwait && runloop) {  //Give the sensors time to warm up

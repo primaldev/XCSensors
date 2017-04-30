@@ -1,5 +1,5 @@
 /*
-  XCsensors by Marco van Zoest
+  XCSensors by Marco van Zoest
 
   www.primaldev.nl
   www.primalcode.nl
@@ -83,13 +83,13 @@ int getSize(char* ch) {
 
 
 void sendData(char *message, int id) {
-#if defined(SERIAL1OUTONLY)
-  Serial.println(message);
-#else
-  if (conf.bluetoothOnly) {
-    SERIAL_MAIN.println(message);
-  } else {
-#if defined(ESPAT)
+#if defined(SERIAL_MAIN)
+  if (conf.SerialMain) {
+    SERIAL_MAIN.print(message);
+    SERIAL_MAIN.print("\n");
+ } 
+#endif
+#if defined(SERIALESP)
 #if defined(ESPAT)
     if (conf.wifiMultiPort) {
       int len = getSize(message) + 1; //sizeof might be wrong
@@ -107,11 +107,12 @@ void sendData(char *message, int id) {
     }
 #else
     SERIALESP.print(message);
-    SERIALESP.print(F("\n\r"));
+    SERIALESP.print("\n");
+    
 #endif
 #endif
-  }
+  
 
-#endif
+
 }
 
