@@ -56,6 +56,7 @@ void getDefaultConfig() {
   conf.AcclChannel = 4;
   //  strcpy(conf.ssid, "XCSensors");
   //  strcpy(conf.password, "thereisnospoon");
+  conf.magOrientation = 90; //correct mag accrding to device orientation
   conf.magDeclination = 0; //in Radians. Find your declination here: http://www.magnetic-declination.com/
   conf.qnePressure = 101325; //QNH value to calculate vario Altitude
   conf.varioDeadBand = 100; // X 1000 levels lower than this = 0. (ignored by ptas1)
@@ -64,14 +65,14 @@ void getDefaultConfig() {
   conf.ptas1 = true; // send ptas1 nmea, uses the gps channel (once every 155ms)
   conf.lxnav = true; //send vario lxnav sentence
   conf.accloffset = 0; //manual offset for accl x 1000
-  conf.variosmooth = 17; //low pass filter, the higher the number the slower the raw vario reading changes.
+  conf.variosmooth = 15; //low pass filter, the higher the number the slower the raw vario reading changes.
   conf.buzzer = true; // turn vario audio on or off
-  conf.varioAudioDeadBand = 200; //X 1000
-  conf.varioAudioSinkDeadBand = 300;  //X 1000 and absolute value
-  conf.advTriggerTime = 1500; // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
-  conf.advRelaxTime = 30000; // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
-  conf.advMinSmooth = 10; // lowest level for conf.variosmooth
-  conf.advMaxSmooth = 35; // highest level for conf.variosmooth
+  conf.varioAudioDeadBand = 100; //X 1000
+  conf.varioAudioSinkDeadBand = 3000;  //X 1000 and absolute value
+  conf.advTriggerTime = 1000; // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
+  conf.advRelaxTime = 20000; // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
+  conf.advMinSmooth = 8; // lowest level for conf.variosmooth
+  conf.advMaxSmooth = 30; // highest level for conf.variosmooth
 }
 
 #if defined (SERIAL_CONFIG)
@@ -88,8 +89,8 @@ void printaf(int n) {
     case 5: SERIAL_CONFIG.print(F("5) Humid Sensor Channel: ")); break;
     case 6: SERIAL_CONFIG.print(F("6) Mag track Channel: ")); break;
     case 7: SERIAL_CONFIG.print(F("7) Accl Channel: ")); break;
-    //   case 8: SERIAL_CONFIG.print(F("8) Wifi SSID: ")); break;
-    //    case 9: SERIAL_CONFIG.print(F("9) Wifi Password: ")); break;
+   
+    case 9:  SERIAL_CONFIG.print(F("9)  Magnetic Orientation: ")); break;
     case 10: SERIAL_CONFIG.print(F("10) Magentic Declination: ")); break;
     case 11: SERIAL_CONFIG.print(F("11) QNE Pressure: ")); break;
     case 12: SERIAL_CONFIG.print(F("12) Vario deadband (x1000): ")); break;
@@ -178,8 +179,8 @@ void getConfigVars() { // order is not that important
   //  SERIAL_CONFIG.print(conf.ssid);
   //  printtf();
   //  printaf(9);
-  //  SERIAL_CONFIG.print(conf.password);
-  // printtf();
+  SERIAL_CONFIG.print(conf.magOrientation);
+  printtf();
   printaf(10);
   SERIAL_CONFIG.print(conf.magDeclination);
   printtf();
@@ -274,7 +275,7 @@ void setConf(int varname, char *value) {
     case 6: conf.magChannel = atoi(value); break;
     case 7: conf.AcclChannel = atoi(value); break;
     //case 8: strcpy(conf.ssid, value); break;
-    //case 9: strcpy(conf.password, value); break;
+    case 9: conf.magOrientation = atoi(value); break;
     case 10: conf.magDeclination = atoi(value); break;
     case 11: conf.qnePressure = atoi(value); break;
     case 12: conf.varioDeadBand = atoi(value); break;

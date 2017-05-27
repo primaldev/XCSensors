@@ -20,19 +20,19 @@
 
 
 /////////////////////////////
-// Board type
+// MCU type
 ////////////////////////////
 
 //There can be only one
 
 
 #define TEENSY
-//#define PROMINI
+
 
 //TODO add sendata option for standalone config
 
 /////////////////////////////
-// Config Type (Teensy only)
+// Config Type 
 ////////////////////////////
 //Switch between different configurations
 
@@ -47,6 +47,38 @@
 #define CONFIGOPT //enable configuration option (EEPROM required)
 #define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. If disabled,
 // it can be used by an external app and multiple values can be sent, handy for programs eg: <1=on>
+//#define TEENSYDMA //use  Teensy DMA to do the data movement Not yet implemented
+//#define GPSSERIALEVENT serialEvent2 //use SerialEvent(). Carefull as this might interupt other nmea sentences
+#define TAKEOFFVARIO 0.8 //0.4 //abs vario level to detect takeoff
+#define BUZZERVARIOGRPAD 0.6 // Normal sink rate for glider is -0.9 m/s. By adding this value, the buzzer will sound at "lower" sink rate. 
+#define BUZZERVARIOSTOP 30000 //time vario STOP making noise when climbrate 0 m/s 
+#define VARIO2LEASTDEV //base dual vario on least deviation
+#define PTASAVERAGE //include vario avarage in ptas sentence (ignored by XCSoar)
+#define VARIOREADMS 50//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
+#define SOARDETECTION 30000 // if climbrate is constant for set milliseconds at 0 m/s the buzzer is muted
+/*
+   Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
+   It does it by detecting "triggers".
+*/
+#define ADAPTIVEVARIO //Adapts the vario low pass filter 
+#define ADVLOWTRIGGER 0.1 //0.8 // level at witch low trigger are checked
+
+#define ACCLREADMS 100 //how often to read the accelerom
+#define ACCLSMOOTH 10 //Lowpass filter level
+
+//#define ALLFASTDATA //send all data and 6hz instead once per second. DMA channels reccomended
+
+/*
+  As a workaround for the limited method of NMEA sentences, different sentences can be sent
+  to different ports. This way you can implement the proprietary drivers for the different sensors
+  (LXNAV for the vario and Vega for the humid sensor). The passthrough option in XCSoar does not always work.
+*/
+#define CHANNEL1PORT 4353  //udp ports for the designated channels
+#define CHANNEL2PORT 10110
+#define CHANNEL3PORT 4352
+#define CHANNEL4PORT 2000 //depending on esp firmware, the 4rth channel might not be available
+
+//#define TESTBUZZER  //simulate the vario sound for testing only
 
 
 /////////////////////////////
@@ -66,24 +98,13 @@
 
 #define SERIALGPS Serial2
 #define GPS
-//#define GPSSERIALEVENT serialEvent2 //use SerialEvent(). Carefull as this might interupt other nmea sentences
-#define SERIALGPSBAUD 115200 // serial1 speed
+#define SERIALGPSBAUD 115200 
 
 #define VARIO
 #define VARIO2 //if 2nd vario
-#define VARIO2LEASTDEV //base dual vario on least deviation
-#define PTASAVERAGE //include vario avarage in ptas sentence (ignored by XCSoar)
-#define VARIOREADMS 40//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
+
 #define BAROADDR 0x77
 #define BAROADDR2 0x76
-
-
-/*
-   Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
-   It does it by detecting "triggers".
-*/
-#define ADAPTIVEVARIO //Adapts the vario low pass filter aka. 
-#define ADVLOWTRIGGER 0.08 // level at witch low trigger are checked
 
 
 //#define ESPWIFI
@@ -96,12 +117,11 @@
 //#define WIFIPASSWORD "thereisnospoon"
 
 #define DHT
-#define DHTTYPE DHT11   //for the library
-#define MAG
 #define DHT11_PIN 17
+#define DHTOFFSET 50 //calibrate sensor
+#define MAG
+
 #define ACCL
-#define ACCLREADMS 100 //how often to read the accelerom
-#define ACCLSMOOTH 10 //Lowpass filter level
 
 
 //SerialOut can be used to connect to a Kobo serial port or a HC-05, no changes needed
@@ -120,23 +140,9 @@
   AT+PSWD=1234
 */
 
-/*
-  As a workaround for the badly standardized method of NMEA sentences, different sentences can be sent
-  to different ports. This way you can implement the proprietary drivers for the different sensors
-  (LXNAV for the vario and Vega for the humid sensor). The passthrough option in XCSoar does not always work.
-*/
-#define CHANNEL1PORT 4353  //udp ports for the designated channels
-#define CHANNEL2PORT 10110
-#define CHANNEL3PORT 4352
-#define CHANNEL4PORT 2000 //depending on esp firmware, the 4rth channel might not be available
-
-
-
-//#define VREFCAL 1126400L //Calibration voltage level. see https://github.com/rlogiacco/VoltageReference
-
 #define BUZZER //let's go beep
 #define BUZZPIN 16 //board pin 
-//#define TESTBUZZER  //simulate the vario sound for testing only
+
 
 #endif
 
@@ -148,24 +154,12 @@
 
 #define SERIALGPS Serial2
 #define GPS
-//#define GPSSERIALEVENT serialEvent2 //use SerialEvent(). Carefull as this might interupt other nmea sentences
 #define SERIALGPSBAUD 9600 // serial1 speed
 
 #define VARIO
 #define VARIO2 //if 2nd vario
-#define VARIO2LEASTDEV //base dual vario on least deviation
-#define PTASAVERAGE //include vario avarage in ptas sentence (ignored by XCSoar)
-#define VARIOREADMS 40//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
 #define BAROADDR 0x77
 #define BAROADDR2 0x76
-
-
-/*
-   Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
-   It does it by detecting "triggers".
-*/
-#define ADAPTIVEVARIO //Adapts the vario low pass filter aka. 
-#define ADVLOWTRIGGER 0.08 // level at witch low trigger are checked
 
 
 #define ESPWIFI
@@ -178,12 +172,11 @@
 #define WIFIPASSWORD "thereisnospoon"
 
 #define DHT
-#define DHTTYPE DHT11   //for the library
-#define MAG
 #define DHT11_PIN 17
+#define DHTOFFSET 30 //calibrate sensor
+#define MAG
+
 #define ACCL
-#define ACCLREADMS 100 //how often to read the accelerom
-#define ACCLSMOOTH 10 //Lowpass filter level
 
 
 //SerialOut can be used to connect to a Kobo serial port or a HC-05, no changes needed
@@ -202,29 +195,15 @@
   AT+PSWD=1234
 */
 
-/*
-  As a workaround for the badly standardized method of NMEA sentences, different sentences can be sent
-  to different ports. This way you can implement the proprietary drivers for the different sensors
-  (LXNAV for the vario and Vega for the humid sensor). The passthrough option in XCSoar does not always work.
-*/
-#define CHANNEL1PORT 4353  //udp ports for the designated channels
-#define CHANNEL2PORT 10110
-#define CHANNEL3PORT 4352
-#define CHANNEL4PORT 2000 //depending on esp firmware, the 4rth channel might not be available
-
-
-
-//#define VREFCAL 1126400L //Calibration voltage level. see https://github.com/rlogiacco/VoltageReference
 
 #define BUZZER //let's go beep
 #define BUZZPIN 16 //board pin 
-//#define TESTBUZZER  //simulate the vario sound for testing only
-
 
 
 
 #endif
 
+#endif //TEENSY
 ////////////////////Set Configuration logic/////////////////////////
 
 
@@ -246,77 +225,10 @@
 #endif
 
 
-#endif //TEENSY
+
 
 /////////////////////////////////////////////////////////////////////
 
-/////////////////////////////
-// Board Pro Mini 
-////////////////////////////
-/*
- * Pro Mini has less memory and one UART, but with a piezzo buzzer and LCD 
- * you can still build a small vario.
- */
 
-
-#if defined(PROMINI) 
-#define WIFI //use wifi option or serial out option
-
-#define VARIO
-//#define VARIO2 //if 2nd vario
-//#define VARIO2LEASTDEV //base dual vario on least deviation
-#define PTASAVERAGE //include vario avarage in ptas sentence (ignored by XCSoar)
-#define VARIOREADMS 40//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
-#define BAROADDR 0x77
-#define BAROADDR2 0x76
-
-/*
-   Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
-   It does it by detecting "triggers".
-*/
-#define ADAPTIVEVARIO //Adapts the vario low pass filter aka. 
-#define ADVLOWTRIGGER 0.08 // level at witch low trigger are checked
-
-#if !defined(WIFI)
-
-//Option BT
-#define SERIAL_CONFIG Serial 
-//Serial can be used to connect to a Kobo serial port or Bluetooth HC-05, no changes needed
-#define SERIAL_MAIN Serial     //the main output serial
-#define SERIAL_MAINBAUD 38400 
-
-//Option Wifi
-#else 
-#define SERIALESP Serial
-#define ESPWIFI
-#define ESPAT  //use AT commands
-#define ESPWIFIBAUD 115200 //Softserial of the ESP8266 can't handle high baud rates
-
-#define WIFISSID "XCSensors" // change this 
-#define WIFIPASSWORD "thereisnospoon"
-
-#define CHANNEL1PORT 4353  //udp ports for the designated channels
-#define CHANNEL2PORT 10110
-#define CHANNEL3PORT 4352
-#define CHANNEL4PORT 2000 //depending on esp firmware, the 4rth channel might not be available
-
-#endif //WIFI
-
-//Extra Sensors. Be carefull here, you have limited memory
-#define DHT
-#define DHTTYPE DHT11   //for the library
-#define MAG
-#define DHT11_PIN 17
-#define ACCL
-#define ACCLREADMS 100 //how often to read the accelerom
-#define ACCLSMOOTH 10 //Lowpass filter level
-
-
-#define BUZZER //let's go beep
-#define BUZZPIN 16 //board pin 
-//#define TESTBUZZER  //simulate the vario sound for testing only
-
-
-#endif //PROMINI
  
 

@@ -32,6 +32,7 @@ typedef struct {
   //char password[32];
   double qnePressure;
   int varioDeadBand;
+  int magOrientation;
   int magDeclination;
   bool wifiMultiPort;
   bool SerialMain;

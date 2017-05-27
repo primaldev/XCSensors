@@ -13,7 +13,6 @@
 #include "MS5611.h"
 #include "NMEA.h"
 #include "Average.h"
-#include <dht.h>
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <SoftwareSerial.h>
@@ -23,15 +22,14 @@ void resetACCLcompVal();
 void collectNmea6();
 void readVarioPressure();
 void readACCLSensor();
+void getSensorData();
 
 extern int16_t mx, my, mz;
 extern bool runloop;
 extern NMEA nmea;
-//#if defined(DHT)
-extern dht dhts;
-//#endif
+extern bool takeoff;
 
-
-
+extern byte dhttemperature;
+extern byte dhthumidity;
 
 

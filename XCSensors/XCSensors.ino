@@ -11,20 +11,22 @@
   any later version. see <http://www.gnu.org/licenses/>
 */
 
-#include "config.h"
+
 #include <Arduino.h>
 #include "XCSensors.h"
 #include <TimedAction.h>
+#include <Wire.h>
+#include "config.h"
 #include "MS5611.h"
-#include <dht.h>
+#include <SimpleDHT.h>
 #include <MPU6050.h>
 #include <HMC5883L.h>
-#include <Wire.h>
 //#include <VoltageReference.h>
 #include "Conf.h"
 #include "SubFunctions.h"
 #include "Average.h"
 #include "SendData.h"
+#include "DMAChannel.h"
 
 //----------------------------------------------------------------------------//
 // Loadable Config Variables
@@ -37,6 +39,7 @@ conf_t conf;
 //----------------------------------------------------------------------------//
 bool runloop = true;
 bool startwait = false;
+bool takeoff=false;
 int32_t realPressureAv = 1; //usable stabalized reading
 int32_t rawPressurePrev = 0; //previous direct reading
 int32_t rawPressurePrev2 = 0;
@@ -54,7 +57,10 @@ int16_t mx, my, mz;
 #endif
 byte gi = 0;
 bool hasrun = false;
-
+#if defined(DHT)
+byte dhttemperature = 0;
+byte dhthumidity = 0;
+#endif
 //----------------------------------------------------------------------------//
 // Class Loaders
 //----------------------------------------------------------------------------//
@@ -74,7 +80,7 @@ MS5611 baro_2(BAROADDR2);
 #endif
 
 #if defined(DHT)
-dht dhts;
+SimpleDHT11 dht11;
 #endif
 
 #if defined(ACCL)
@@ -86,7 +92,9 @@ MPU6050 accelgyro;
 HMC5883L mag;
 #endif
 
-
+#if defined(TEENSYDMA)
+DMAChannel dmachannel;
+#endif
 
 //VoltageReference vRef = VoltageReference();
 NMEA nmea;
@@ -153,17 +161,25 @@ void collectNmea6() {
   vectoraz = (sqrt(pow(aax, 2) + pow(aay, 2) + pow(aaz, 2))) - 1;
 
 #endif
+ 
+
+#if defined(ALLFASTDATA)
+ 
+ sendNmeaAll();
+#else 
 #if !defined(GPSTIMER)
 
   gi++;
   if (gi > 5) { // 6 samples collected
     ledOn();
-    sendSensorData();
+    getSensorData();
+    sendNmeaAll();
     gi = 0;
     ledOff();
   }
 #endif
 
+#endif
 }
 
 void readACCLSensor() {
@@ -228,7 +244,7 @@ void GPSSERIALEVENT() { //Builtin Arduino Function
  * before calling sendNmeaAll.
  */
 
-void sendSensorData() {
+void getSensorData() {
 #if defined(VARIO)
   varioAv = nmea_varioave.mean();
   if (conf.lxnav) {
@@ -241,14 +257,15 @@ void sendSensorData() {
   nmea.setGforce((vectoraz / 2048) + (conf.accloffset / 1000) );
 #endif
 
-#if defined (DHT)
-  dhts.read11(DHT11_PIN);
+#if defined (DHT) 
+  dht11.read(DHT11_PIN, &dhttemperature, &dhthumidity, NULL);
+  dhthumidity += DHTOFFSET;
 #endif
 #if defined (MAG)
   mag.getHeading(&mx, &my, &mz);
 #endif
 
-  sendNmeaAll(); //Send the DATA for all sensors, the vario is leading (except for gps)
+
 
 }
 
@@ -395,6 +412,7 @@ void loop() {
   if (!startwait) { //init the tables so it won't shock the system
 #if defined(VARIO)
     readVarioPressure();
+    //readVario.check();
     int32_t alt =   baro.getAltitude( realPressureAv, conf.qnePressure);
 
     nmea_altitudeave.push(alt);
@@ -429,11 +447,31 @@ if (SERIALGPS.available()) {
     readACCL.check();
 #endif
 
+if ( startTime > STARTDELAY + 4000) {
+   if (fabs(vario) > TAKEOFFVARIO) {
+      takeoff=true;
+   }
+        
+}
+
 #if defined(BUZZER)
+int tpassed=0;
     if (conf.buzzer ) {
-      makeSound(vario);
+       if (takeoff) {
+             makeSound(vario); 
+       }
     }
+
+
+    
 #endif
+
+
   }
+
+ 
+     
+  
+  
 
 }

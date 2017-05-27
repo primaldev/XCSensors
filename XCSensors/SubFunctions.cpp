@@ -24,10 +24,11 @@ unsigned long vtime = 0;
 
 
 #if defined(BUZZER)
-
+unsigned long stime = 0;
 unsigned long ttime = 0;
 bool toneon = true;
 bool playtone = false;
+byte climbing = 0;
 #endif
 #if defined(TESTBUZZER)
 unsigned long btime = 0;
@@ -180,8 +181,8 @@ void getConfVal(char c) {
 
 void sendNmeaDHT() {
 #if defined(DHT)
-  int temp = (dhts.temperature + 273.15) * 10;
-  nmea.setNmeaHumidSentence(temp, dhts.humidity);
+  int temp = (dhttemperature + 273.15) * 10;
+  nmea.setNmeaHumidSentence(temp, dhthumidity);
   sendData(nmea.nmeaHumid, conf.humidChannel);
 #endif
 
@@ -200,7 +201,13 @@ float getCalcHeading() {
   float heading = atan2(my, mx);
   if (heading < 0)
     heading += 2 * M_PI;
-  return heading * 180 / M_PI;
+    
+    heading = (heading * 180 / M_PI) + conf.magOrientation;
+
+    if (heading > 360) {
+      heading = heading - 360;
+    }
+    return heading;
 
 #else
   return 999;
@@ -246,9 +253,15 @@ void sendNmeaAll() {
 
 #if defined(BUZZER)
 
+#define BASEPULSE 200
+#define TOPPULSE  1000
+
 void makeSound(float vario) {
   int pulse;
-
+  float varioorg = vario;
+if (takeoff) {
+  vario += BUZZERVARIOGRPAD;
+}
 #if defined(TESTBUZZER)
   vario = testvario;
   int tpassed = millis() - btime;
@@ -273,24 +286,48 @@ void makeSound(float vario) {
 
   if (vario >= double(conf.varioAudioDeadBand) / 1000) {
   
-      pulse = 2000 / (vario * 10) + 100;
+      pulse = TOPPULSE / (vario * 10) + 100;
     
   } else {
-    pulse = 400;
+    pulse = BASEPULSE;
   }
 
-  if (playtone) {
-    if (vario > double(conf.varioAudioDeadBand) / 1000 ) {
-      
-      tone(BUZZPIN, variof);
+  #if defined(SOARDETECTION)
+  
+  if (varioorg > -0.2 && varioorg < 0.2) {
+    int diffe= millis() - stime;
+    if (diffe >  SOARDETECTION) {
+         playtone=false;
+    }
+  }else{
+    stime = millis();
+  }
+
+  #endif
+  
+
+  if (playtone) {   
+    
+    if (vario > double(conf.varioAudioDeadBand) / 1000 ) {      
+      tone(BUZZPIN, variof);      
+      climbing = 20;
       playtone = false;
     } else if (vario < -double(conf.varioAudioSinkDeadBand) / 1000 ) {
-      pulse = 400;
+      pulse = BASEPULSE;
       tone(BUZZPIN, 200);
       playtone = false;
     } else {
-      noTone(BUZZPIN);
-      pinMode(BUZZPIN, INPUT);
+      
+      if (climbing > 0) { //dropped out of the thermal
+        pulse = 2000;
+        tone(BUZZPIN, 100);
+        climbing--;
+      }
+      //noTone(BUZZPIN);
+     // pinMode(BUZZPIN, INPUT);
+      
+    
+      
     }
   }
 
@@ -304,11 +341,11 @@ void makeSound(float vario) {
       toneon = false;
       playtone = false;
       pinMode(BUZZPIN, INPUT);
-      ttime = millis() - 80;
+      ttime = millis() - 40;
     } else  {
       toneon = true;
       playtone = true;
-      ttime = millis() + 50;
+      ttime = millis() + 20;
 
     }
   }
