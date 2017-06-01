@@ -1,9 +1,8 @@
 
 /*
-  XCSensors by Marco van Zoest
-
-  www.primaldev.nl
-  www.primalcode.nl
+  XCSensors http://XCSensors.org
+  
+  Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,12 +20,14 @@
 #include <SimpleDHT.h>
 #include <MPU6050.h>
 #include <HMC5883L.h>
-//#include <VoltageReference.h>
 #include "Conf.h"
 #include "SubFunctions.h"
 #include "Average.h"
 #include "SendData.h"
 #include "DMAChannel.h"
+
+#include "Audio.h"
+
 
 //----------------------------------------------------------------------------//
 // Loadable Config Variables
@@ -39,7 +40,7 @@ conf_t conf;
 //----------------------------------------------------------------------------//
 bool runloop = true;
 bool startwait = false;
-bool takeoff=false;
+bool takeoff = false;
 int32_t realPressureAv = 1; //usable stabalized reading
 int32_t rawPressurePrev = 0; //previous direct reading
 int32_t rawPressurePrev2 = 0;
@@ -61,16 +62,19 @@ bool hasrun = false;
 byte dhttemperature = 0;
 byte dhthumidity = 0;
 #endif
+
+#if defined(BUZZER)
+byte trun = 0;
+#endif
 //----------------------------------------------------------------------------//
 // Class Loaders
 //----------------------------------------------------------------------------//
 
-TimedAction timedNmea6 = TimedAction(155, collectNmea6); // 6 times per second (155 close enough) / (vario/s is dependant on this)
-
+TimedAction timedNmea10 = TimedAction(100, collectNmea10); // 10 times per second
 
 #if defined(VARIO)
-Average<float> nmea_varioave(6);
-Average<float> nmea_altitudeave(6); //fixed values i.c.w. timed action
+Average<float> nmea_varioave(10);
+Average<float> nmea_altitudeave(10); //Used for calculating vario
 TimedAction readVario = TimedAction(VARIOREADMS, readVarioPressure); //processor to fast.
 
 MS5611 baro(BAROADDR);
@@ -111,21 +115,22 @@ void ledOff() {
   digitalWrite(13, LOW);
 }
 
+
 /*
- * Collects and process sensor data
- * Runs every 155 ms a.k.a 6 times per second
- * Sensor readings are processed at different timed actions
- * this function collects that data. 
- */
-void collectNmea6() {
+   Collects and process sensor data
+
+   Sensor readings are processed at different timed actions
+   this function collects that data.
+*/
+void collectNmea10() {
 #if defined(VARIO)
 
   double realAltitude = baro.getAltitude( realPressureAv, conf.qnePressure); //Based on QN
 
   nmea_altitudeave.push(realAltitude);
 
-  if (nmea_altitudeave.getCount() > 5) {
-    vario = nmea_altitudeave.get(5) - nmea_altitudeave.get(0);
+  if (nmea_altitudeave.getCount() > 9) {
+    vario = nmea_altitudeave.get(9) - nmea_altitudeave.get(0);
   } else {
     vario = 0;
   }
@@ -146,11 +151,11 @@ void collectNmea6() {
   }
 
   checkAdaptiveVario(vario);
-  
+
   if (fabs(vario) > 0 && fabs(vario) < conf.varioDeadBand / 1000) {
     vario = 0;
   }
-  nmea_varioave.push(vario);
+
   previousAltitude = realAltitude;
 #endif
   //get ACCL
@@ -161,12 +166,12 @@ void collectNmea6() {
   vectoraz = (sqrt(pow(aax, 2) + pow(aay, 2) + pow(aaz, 2))) - 1;
 
 #endif
- 
+
 
 #if defined(ALLFASTDATA)
- 
- sendNmeaAll();
-#else 
+
+  sendNmeaAll();
+#else
 #if !defined(GPSTIMER)
 
   gi++;
@@ -195,9 +200,9 @@ void resetACCLcompVal() {
 }
 
 /*
- * Initialize all sensors
- * 
- */
+   Initialize all sensors
+
+*/
 void initSensors() {
 #if defined(VARIO)
   baro = MS5611(BAROADDR);
@@ -223,7 +228,6 @@ void initSensors() {
 }
 
 
-
 #if defined(GPS) && defined(GPSSERIALEVENT)
 void GPSSERIALEVENT() { //Builtin Arduino Function
   if (startwait && runloop) {
@@ -240,15 +244,15 @@ void GPSSERIALEVENT() { //Builtin Arduino Function
 #endif
 
 /*
- * Sends vario data and collects other sensor data 
- * before calling sendNmeaAll.
- */
+   Sends vario data and collects other sensor data
+   before calling sendNmeaAll.
+*/
 
 void getSensorData() {
 #if defined(VARIO)
   varioAv = nmea_varioave.mean();
   if (conf.lxnav) {
-    nmea.setnmeaVarioLXWP0(previousAltitude, nmea_varioave.get(0), nmea_varioave.get(1), nmea_varioave.get(2), nmea_varioave.get(3), nmea_varioave.get(4), nmea_varioave.get(5), getCalcHeading()); //need to gather 6 samples
+    nmea.setnmeaVarioLXWP0(previousAltitude, nmea_varioave.get(0), nmea_varioave.get(2), nmea_varioave.get(4), nmea_varioave.get(6), nmea_varioave.get(8), nmea_varioave.get(9), getCalcHeading()); //need to gather 6 samples
     //  float volt = vRef.readVcc();
     nmea.setNmeaVarioSentence(realPressureAv, previousAltitude, varioAv, baro.getTemperature(), 0 / 1000);
   }
@@ -257,7 +261,7 @@ void getSensorData() {
   nmea.setGforce((vectoraz / 2048) + (conf.accloffset / 1000) );
 #endif
 
-#if defined (DHT) 
+#if defined (DHT)
   dht11.read(DHT11_PIN, &dhttemperature, &dhthumidity, NULL);
   dhthumidity += DHTOFFSET;
 #endif
@@ -266,15 +270,14 @@ void getSensorData() {
 #endif
 
 
-
 }
 
 /*
- * Read barometer sensors. Called by timed action
- * Uses lowpass filter to produce stable output
- * In case of dual baro sensors, two options are available:
- * Average calculation or least deviation. 
- */
+   Read barometer sensors. Called by timed action
+   Uses lowpass filter to produce stable output
+   In case of dual baro sensors, two options are available:
+   Average calculation or least deviation.
+*/
 
 void readVarioPressure() {
 
@@ -326,9 +329,9 @@ void runOnce() {
     resetACCLcompVal();
 #endif
 #if defined(BTSLEEP)
-   if (runloop && !conf.SerialMain) {
-     digitalWrite(BTENPIN, LOW); //Make BT go ZZ
-   }
+    if (runloop && !conf.SerialMain) {
+      digitalWrite(BTENPIN, LOW); //Make BT go ZZ
+    }
 #endif
   }
   hasrun = true;
@@ -346,15 +349,19 @@ void setup() {
 #endif
   pinMode(13, OUTPUT); //LED
   ledOn();
-#if defined(SERIAL_MAINBAUD)
-  SERIAL_MAIN.begin(SERIAL_MAINBAUD);
+#if defined(SERIALOUT_BAUD)
+  SERIALOUT.begin(SERIALOUT_BAUD);
+#endif
+
+#if defined(SERIALOUTBT_BAUD)
+  SERIALOUTBT.begin(SERIALOUTBT_BAUD);
 #endif
 
 #if defined(GPS)
   SERIALGPS.begin(SERIALGPSBAUD); //for the gps
 #endif
   Wire.begin();
-  
+
 
 
 #if defined(SERIALESP)
@@ -373,19 +380,23 @@ void setup() {
 #if defined(BTENPIN)
   pinMode(BTENPIN, OUTPUT);
   digitalWrite(BTENPIN, HIGH);
-#endif 
+#endif
+
+#if defined(SERIAL_CONFIG_BAUD)
+  SERIAL_CONFIG.begin(SERIAL_CONFIG_BAUD);
+#endif
 
 #if defined(CONFIGOPT)
   getConfig();
-#else 
+#else
   getDefaultConfig();
 #endif
   initSensors();
- 
+
 #if defined(ESPAT)
-    setSendData();
+  setSendData();
 #endif
-  
+
 
   ledOff(); //If the led stays on, the sensors failed to init
   //vRef.begin(VREFCAL);
@@ -424,15 +435,15 @@ void loop() {
     char inChar = SERIAL_CONFIG.read();
     getConfVal(inChar);
 
-  } 
+  }
 #endif
 
   if (startwait && runloop) {  //Give the sensors time to warm up
 
-    timedNmea6.check();
+    timedNmea10.check();
 
 #if defined(GPS) && !defined(GPSSERIALEVENT)
-if (SERIALGPS.available()) {
+    if (SERIALGPS.available()) {
       char inChar = (char)SERIALGPS.read();
       GPSstuff(inChar);
     }
@@ -447,31 +458,31 @@ if (SERIALGPS.available()) {
     readACCL.check();
 #endif
 
-if ( startTime > STARTDELAY + 4000) {
-   if (fabs(vario) > TAKEOFFVARIO) {
-      takeoff=true;
-   }
-        
-}
+    if ( startTime > STARTDELAY + 4000 && !takeoff) {
+      if (fabs(vario) > TAKEOFFVARIO) {
+        takeoff = true;
+      }
 
-#if defined(BUZZER)
-int tpassed=0;
-    if (conf.buzzer ) {
-       if (takeoff) {
-             makeSound(vario); 
-       }
     }
 
+#if defined(BUZZER)
+    trun++;
 
-    
+    if (conf.buzzer && trun > BUZZERCYCLE) {
+      if (takeoff) {
+        makeSound(vario);
+      }
+      trun = 0;
+    }
+
 #endif
 
 
   }
 
- 
-     
-  
-  
+
+
+
+
 
 }

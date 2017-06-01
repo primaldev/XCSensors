@@ -1,8 +1,7 @@
 /*
-  XCSensors by Marco van Zoest
-
-  www.primaldev.nl
-  www.primalcode.nl
+  XCSensors http://XCSensors.org
+  
+  Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -12,28 +11,15 @@
 #include <Arduino.h>
 #include "SubFunctions.h"
 #include "XCSensors.h"
-#include "config.h" //All other files must use return values or classes
+#include "config.h"
 #include "Conf.h"
 #include "SendData.h"
 
-bool cmd = false;
 #if defined(ADAPTIVEVARIO)
-bool vTriggerd=false;
+bool vTriggerd = false;
 unsigned long vtime = 0;
 #endif
 
-
-#if defined(BUZZER)
-unsigned long stime = 0;
-unsigned long ttime = 0;
-bool toneon = true;
-bool playtone = false;
-byte climbing = 0;
-#endif
-#if defined(TESTBUZZER)
-unsigned long btime = 0;
-float testvario = 0;
-#endif
 //
 
 #define GPSBUFFER 120
@@ -62,330 +48,45 @@ void GPSstuff(char c) {                                         // GPSbuffer[] i
 
   if (flag) {                                                   // test for end of line and if the right GPSbuffer
     flag = false;                                               // reset for next time
-    sendData(GPSbuffer, conf.GPSChannel); //TODO need testing
+    sendData(GPSbuffer, conf.GPSChannel);
 
     memset(GPSbuffer, 0, sizeof(GPSbuffer));
   }
 
 }
 
-#if defined(HUMANCONFIG)
-void getConfVal(char c) {
-  static char Confbuffer[5];
-  static char Valbuffer[32];
-  static int i, y;
-  static char q;
-  static bool flag = false;
-  static bool split = false;
-  q = c;
 
-  if (!cmd)                                              // '<'
-  {
-    i = 0;
-    y = 0;
-    cmd = true;
-  }
 
-  if ( q == 0x3d)                                              // '='
-  {
-    split = true;
-  }
-
-  if (  q == 0x3d || q == 0x0d || q == 0x0a ) {
-
-  } else {
-    if (split) {
-
-      if ( y < 32) Valbuffer[y++] = q;
-
-    } else {
-
-      if ( i < 5) Confbuffer[i++] = q;
-
-    }
-  }
-
-  if (q == 0x0d) { // enter
-    flag = true;
-    i = 0;
-    y = 0;
-    cmd = false;
-  }
-  //Serial.print(c);
-  if (flag) {
-    flag = false;
-    split = false;
-    setConf(atoi(Confbuffer), Valbuffer);
-    memset(Confbuffer, 0, sizeof(Confbuffer));
-    memset(Valbuffer, 0, sizeof(Valbuffer));
-
-  }
-
-
-}
-#else
-
-void getConfVal(char c) {
-  static char Confbuffer[5];
-  static char Valbuffer[32];
-  static int i, y;
-  static char q;
-  static bool flag = false;
-  static bool split = false;
-  q = c;
-
-  if ( q == 0x3c)                                              // '<'
-  {
-    i = 0;
-    y = 0;
-  }
-
-  if ( q == 0x3d)                                              // '='
-  {
-    split = true;
-  }
-
-  if ( q == 0x3c || q == 0x3d || q == 0x3e) {
-
-  } else {
-    if (split) {
-
-      if ( y < 32) Valbuffer[y++] = q;
-
-    } else {
-
-      if ( i < 5) Confbuffer[i++] = q;
-
-    }
-  }
-
-  if (q == 0x3e) { // '>'
-    flag = true;
-    i = 0;
-    y = 0;
-  }
-
-  if (flag) {
-    flag = false;
-    split = false;
-
-    setConf(atoi(Confbuffer), Valbuffer);
-    memset(Confbuffer, 0, sizeof(Confbuffer));
-    memset(Valbuffer, 0, sizeof(Valbuffer));
-
-  }
-
-}
-#endif
-
-
-void sendNmeaDHT() {
-#if defined(DHT)
-  int temp = (dhttemperature + 273.15) * 10;
-  nmea.setNmeaHumidSentence(temp, dhthumidity);
-  sendData(nmea.nmeaHumid, conf.humidChannel);
-#endif
-
-}
-
-void sendNmeaHEading() {
-#if defined(MAG)
-  nmea.setMagneticHeading(getCalcHeading());
-  sendData(nmea.nmeaMag, conf.magChannel);
-#endif
-
-}
-
-float getCalcHeading() {
-#if defined(MAG)
-  float heading = atan2(my, mx);
-  if (heading < 0)
-    heading += 2 * M_PI;
-    
-    heading = (heading * 180 / M_PI) + conf.magOrientation;
-
-    if (heading > 360) {
-      heading = heading - 360;
-    }
-    return heading;
-
-#else
-  return 999;
-#endif
-}
-
-void sendAccelerometor() {
-#if defined(ACCL)
-  sendData(nmea.nmeaGforce, conf.AcclChannel);
-#endif
-}
-
-void sendPTAS1() { //sends vario data every 155ms on generic GPS channel
-#if defined(VARIO)
-  sendData(nmea.nmeaPTAS1, conf.GPSChannel);
-#endif
-}
-
-void sendNmeaAll() {
-
-#if defined(VARIO)
-  if (conf.lxnav) {
-    sendData(nmea.nmeaVarioLXWP0, conf.varioChannel);
-    sendData(nmea.nmeaVario, conf.varioChannel);
-
-  }
-
-#endif
-#if defined(MAG)
-  sendNmeaHEading();
-#endif
-
-#if defined(DHT)
-  sendNmeaDHT();
-#endif
-
-#if defined(ACCL)
-  sendAccelerometor();
-#endif
-
-
-}
-
-#if defined(BUZZER)
-
-#define BASEPULSE 200
-#define TOPPULSE  1000
-
-void makeSound(float vario) {
-  int pulse;
-  float varioorg = vario;
-if (takeoff) {
-  vario += BUZZERVARIOGRPAD;
-}
-#if defined(TESTBUZZER)
-  vario = testvario;
-  int tpassed = millis() - btime;
-  if (tpassed > 2000) {
-    testvario = testvario + 0.1;
-    btime = millis();
-  }
-
-  if (testvario > 9 ) {
-    testvario = 0;
-  }
-
-  Serial.println(vario);
-#endif
-
-  if (vario > 9) {
-    vario = 9;
-
-  }
-  
-  int variof = (fabs(vario) * 200 ) + 800;
-
-  if (vario >= double(conf.varioAudioDeadBand) / 1000) {
-  
-      pulse = TOPPULSE / (vario * 10) + 100;
-    
-  } else {
-    pulse = BASEPULSE;
-  }
-
-  #if defined(SOARDETECTION)
-  
-  if (varioorg > -0.2 && varioorg < 0.2) {
-    int diffe= millis() - stime;
-    if (diffe >  SOARDETECTION) {
-         playtone=false;
-    }
-  }else{
-    stime = millis();
-  }
-
-  #endif
-  
-
-  if (playtone) {   
-    
-    if (vario > double(conf.varioAudioDeadBand) / 1000 ) {      
-      tone(BUZZPIN, variof);      
-      climbing = 20;
-      playtone = false;
-    } else if (vario < -double(conf.varioAudioSinkDeadBand) / 1000 ) {
-      pulse = BASEPULSE;
-      tone(BUZZPIN, 200);
-      playtone = false;
-    } else {
-      
-      if (climbing > 0) { //dropped out of the thermal
-        pulse = 2000;
-        tone(BUZZPIN, 100);
-        climbing--;
-      }
-      //noTone(BUZZPIN);
-     // pinMode(BUZZPIN, INPUT);
-      
-    
-      
-    }
-  }
-
-  int diff = millis() - ttime;
-
-  if (diff > pulse) {
-    noTone(BUZZPIN);
-    pinMode(BUZZPIN, INPUT);
-
-    if (toneon) {
-      toneon = false;
-      playtone = false;
-      pinMode(BUZZPIN, INPUT);
-      ttime = millis() - 40;
-    } else  {
-      toneon = true;
-      playtone = true;
-      ttime = millis() + 20;
-
-    }
-  }
-
-}
-
-#endif
-
-
-
-void checkAdaptiveVario(double vario){
+void checkAdaptiveVario(double vario) {
 #if defined(ADAPTIVEVARIO)
   if (fabs(vario) > ADVLOWTRIGGER && !vTriggerd) { //fabs abs but can handle floats
-     vtime=millis();
-     vTriggerd=true;
+    vtime = millis();
+    vTriggerd = true;
   }
 
   int diff = millis() - vtime;
-  
-  if (vTriggerd && fabs(vario) < ADVLOWTRIGGER  && diff < conf.advTriggerTime)  { //zero   
-     if(conf.variosmooth <= conf.advMaxSmooth ) {
-       conf.variosmooth++;
-       vTriggerd=false;
-       vtime=millis();
-     }
+
+  if (vTriggerd && fabs(vario) < ADVLOWTRIGGER  && diff < conf.advTriggerTime)  { //zero
+    if (conf.variosmooth <= conf.advMaxSmooth ) {
+      conf.variosmooth++;
+      vTriggerd = false;
+      vtime = millis();
+    }
   }
 
   if (diff > conf.advTriggerTime && vTriggerd) { //overflow reset
-    vTriggerd=false;
+    vTriggerd = false;
   }
 
   if (fabs(vario) < float(ADVLOWTRIGGER ) && !vTriggerd && diff >  conf.advRelaxTime) {
-      if(conf.variosmooth > conf.advMinSmooth ) {
-        conf.variosmooth--;
-        vtime=millis();       
-      }
+    if (conf.variosmooth > conf.advMinSmooth ) {
+      conf.variosmooth--;
+      vtime = millis();
+    }
   }
-  
 
-#endif  
+
+#endif
 }
 
 

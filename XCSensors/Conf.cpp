@@ -1,8 +1,7 @@
 /*
-  XCSensors by Marco van Zoest
-
-  www.primaldev.nl
-  www.primalcode.nl
+  XCSensors http://XCSensors.org
+  
+  Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +18,7 @@
 #include "SubFunctions.h"
 
 
-
+bool cmd = false;
 float f = 0.00f;
 int eeAddress = 0;
 
@@ -61,9 +60,9 @@ void getDefaultConfig() {
   conf.qnePressure = 101325; //QNH value to calculate vario Altitude
   conf.varioDeadBand = 100; // X 1000 levels lower than this = 0. (ignored by ptas1)
   conf.wifiMultiPort = true; //use different ports for NMEA sentences, or only the gps port
-  conf.SerialMain = true; //only send data to the main serial. reset needed to start WIFI
+  conf.SerialMain = true; //only send data to the one serial. reset needed to start WIFI
   conf.ptas1 = true; // send ptas1 nmea, uses the gps channel (once every 155ms)
-  conf.lxnav = true; //send vario lxnav sentence
+  conf.lxnav = false; //send vario lxnav sentence
   conf.accloffset = 0; //manual offset for accl x 1000
   conf.variosmooth = 15; //low pass filter, the higher the number the slower the raw vario reading changes.
   conf.buzzer = true; // turn vario audio on or off
@@ -71,8 +70,8 @@ void getDefaultConfig() {
   conf.varioAudioSinkDeadBand = 3000;  //X 1000 and absolute value
   conf.advTriggerTime = 1000; // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
   conf.advRelaxTime = 20000; // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
-  conf.advMinSmooth = 8; // lowest level for conf.variosmooth
-  conf.advMaxSmooth = 30; // highest level for conf.variosmooth
+  conf.advMinSmooth = 6; // lowest level for conf.variosmooth
+  conf.advMaxSmooth = 28; // highest level for conf.variosmooth
 }
 
 #if defined (SERIAL_CONFIG)
@@ -82,14 +81,14 @@ void getDefaultConfig() {
 void printaf(int n) {
   switch (n) {
 
-    case 1: SERIAL_CONFIG.print(F("1) Serial Main Enable ")); break;
+    case 1: SERIAL_CONFIG.print(F("1) Serial Only, Wifi or BT Disable")); break;
     case 2: SERIAL_CONFIG.print(F("2) Wifi Multiport: ")); break;
     case 3: SERIAL_CONFIG.print(F("3) GPS Channel: ")); break;
     case 4: SERIAL_CONFIG.print(F("4) Vario Channel: ")); break;
     case 5: SERIAL_CONFIG.print(F("5) Humid Sensor Channel: ")); break;
     case 6: SERIAL_CONFIG.print(F("6) Mag track Channel: ")); break;
     case 7: SERIAL_CONFIG.print(F("7) Accl Channel: ")); break;
-   
+
     case 9:  SERIAL_CONFIG.print(F("9)  Magnetic Orientation: ")); break;
     case 10: SERIAL_CONFIG.print(F("10) Magentic Declination: ")); break;
     case 11: SERIAL_CONFIG.print(F("11) QNE Pressure: ")); break;
@@ -151,7 +150,7 @@ void printhd() {
 
 
 void getConfigVars() { // order is not that important
-  
+
 #if defined (SERIAL_CONFIG)
   printhd();
   printaf(1);
@@ -229,10 +228,10 @@ void getConfigVars() { // order is not that important
   } else {
     digitalWrite(WIFIEN_PIN, HIGH);
   }
- #endif
 #endif
-//#if defined(LCDMENU) //here be LCD
-//
+#endif
+  //#if defined(LCDMENU) //here be LCD
+  //
 }
 
 
@@ -297,9 +296,9 @@ void setConf(int varname, char *value) {
     case 201:
       runloop = true;
 #if defined(BTSLEEP)
-        if(!conf.SerialMain) {      
-          digitalWrite(BTENPIN, LOW); //Make BT go ZZ   
-        }   
+      if (!conf.SerialMain) {
+        digitalWrite(BTENPIN, LOW); //Make BT go ZZ
+      }
 #endif
       break; //start
     default:
@@ -311,4 +310,112 @@ void setConf(int varname, char *value) {
 }
 
 
+#if defined(HUMANCONFIG)
+void getConfVal(char c) {
+  static char Confbuffer[5];
+  static char Valbuffer[32];
+  static int i, y;
+  static char q;
+  static bool flag = false;
+  static bool split = false;
+  q = c;
+
+  if (!cmd)                                              // '<'
+  {
+    i = 0;
+    y = 0;
+    cmd = true;
+  }
+
+  if ( q == 0x3d)                                              // '='
+  {
+    split = true;
+  }
+
+  if (  q == 0x3d || q == 0x0d || q == 0x0a ) {
+
+  } else {
+    if (split) {
+
+      if ( y < 32) Valbuffer[y++] = q;
+
+    } else {
+
+      if ( i < 5) Confbuffer[i++] = q;
+
+    }
+  }
+
+  if (q == 0x0d) { // enter
+    flag = true;
+    i = 0;
+    y = 0;
+    cmd = false;
+  }
+  //Serial.print(c);
+  if (flag) {
+    flag = false;
+    split = false;
+    setConf(atoi(Confbuffer), Valbuffer);
+    memset(Confbuffer, 0, sizeof(Confbuffer));
+    memset(Valbuffer, 0, sizeof(Valbuffer));
+
+  }
+
+
+}
+#else
+
+void getConfVal(char c) {
+  static char Confbuffer[5];
+  static char Valbuffer[32];
+  static int i, y;
+  static char q;
+  static bool flag = false;
+  static bool split = false;
+  q = c;
+
+  if ( q == 0x3c)                                              // '<'
+  {
+    i = 0;
+    y = 0;
+  }
+
+  if ( q == 0x3d)                                              // '='
+  {
+    split = true;
+  }
+
+  if ( q == 0x3c || q == 0x3d || q == 0x3e) {
+
+  } else {
+    if (split) {
+
+      if ( y < 32) Valbuffer[y++] = q;
+
+    } else {
+
+      if ( i < 5) Confbuffer[i++] = q;
+
+    }
+  }
+
+  if (q == 0x3e) { // '>'
+    flag = true;
+    i = 0;
+    y = 0;
+  }
+
+  if (flag) {
+    flag = false;
+    split = false;
+
+    setConf(atoi(Confbuffer), Valbuffer);
+    memset(Confbuffer, 0, sizeof(Confbuffer));
+    memset(Valbuffer, 0, sizeof(Valbuffer));
+
+  }
+
+}
+#endif
 

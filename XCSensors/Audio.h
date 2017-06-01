@@ -9,15 +9,8 @@
   any later version. see <http://www.gnu.org/licenses/>
 */
 
+#if defined(BUZZER)
+void makeSound(float vario);
+void makeSoundp(int32_t tpressure);
 
-void sendData(char *message, int id);
-void sendNmeaAll();
-float getCalcHeading();
-void sendPTAS1();
-
-void sendAccelerometor();
-void setESPMulti();
-
-void setESPBroadCast();
-void setSendData();
-
+#endif

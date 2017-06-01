@@ -1,21 +1,12 @@
 /*
-  XCSensors by Marco van Zoest
-
-  www.primaldev.nl
-  www.primalcode.nl
+  XCSensors http://XCSensors.org
+  
+  Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   any later version. see <http://www.gnu.org/licenses/>
-*/
-
-/*
-
-  
-  Notes:
-  Lipo battery can cause voltage drops on the USB supply and make the processor unstable.
-
 */
 
 
@@ -29,10 +20,9 @@
 #define TEENSY
 
 
-//TODO add sendata option for standalone config
 
 /////////////////////////////
-// Config Type 
+// Config Type
 ////////////////////////////
 //Switch between different configurations
 
@@ -42,16 +32,21 @@
 
 ///////////////////////////
 
-//#define DEBUG 
+//#define DEBUG
 #define STARTDELAY 8000 //the time delay before the process starts
 #define CONFIGOPT //enable configuration option (EEPROM required)
 #define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. If disabled,
 // it can be used by an external app and multiple values can be sent, handy for programs eg: <1=on>
-//#define TEENSYDMA //use  Teensy DMA to do the data movement Not yet implemented
+
 //#define GPSSERIALEVENT serialEvent2 //use SerialEvent(). Carefull as this might interupt other nmea sentences
+
 #define TAKEOFFVARIO 0.8 //0.4 //abs vario level to detect takeoff
-#define BUZZERVARIOGRPAD 0.6 // Normal sink rate for glider is -0.9 m/s. By adding this value, the buzzer will sound at "lower" sink rate. 
+#define BUZZERVARIOGRPAD 0.4 // Normal sink rate for glider is -0.9 m/s. By adding this value, the buzzer will sound at "lower" sink rate. 
 #define BUZZERVARIOSTOP 30000 //time vario STOP making noise when climbrate 0 m/s 
+//#define TESTBUZZER  //simulate the vario sound for testing only
+#define BUZZERCYCLE 100 //buzzer causes delays so it is only triggerd every n'th cycle. Value depens on cpu clock. 
+#define OUTOFTHERMALBUZZT 3000 //time buzzer goes buuhhhhh
+
 #define VARIO2LEASTDEV //base dual vario on least deviation
 #define PTASAVERAGE //include vario avarage in ptas sentence (ignored by XCSoar)
 #define VARIOREADMS 50//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
@@ -78,7 +73,6 @@
 #define CHANNEL3PORT 4352
 #define CHANNEL4PORT 2000 //depending on esp firmware, the 4rth channel might not be available
 
-//#define TESTBUZZER  //simulate the vario sound for testing only
 
 
 /////////////////////////////
@@ -95,10 +89,22 @@
 #if defined(KOBO_BT)
 
 #define SERIAL_CONFIG Serial3 //the serial port for remote config options
+#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG is not sharing with a SERIALOUT* type port 
+
+//SerialOut means data will be sent from that port. It needs to be set to a harware serial port.
+//Best practice is only to send out to ports you will actually use.
+
+#define SERIALOUT Serial1 //Serial1=kobo
+#define SERIALOUT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
+
+//#define SERIALOUTBT Serial3 //Bluetooth without AT commands Serial out
+//#define SERIALOUTBT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
+
+//#define SERIALUSB Serial //USB output
 
 #define SERIALGPS Serial2
 #define GPS
-#define SERIALGPSBAUD 115200 
+#define SERIALGPSBAUD 115200
 
 #define VARIO
 #define VARIO2 //if 2nd vario
@@ -108,12 +114,12 @@
 
 
 //#define ESPWIFI
-#define SERIALESP Serial1
+//#define SERIALESP Serial3
 //#define ESPAT  //use AT commands
-#define SERIALESPBAUD 115200 //Softserial of the ESP8266 can't handle high baud rates
-//#define WIFIEN_PIN 12 //wifi enable pin 
+//#define SERIALESPBAUD 115200 //Softserial of the ESP8266 can't handle high baud rates
+#define WIFIEN_PIN 12 //wifi enable pin 
 
-//#define WIFISSID "XCSensors01" // change this 
+//#define WIFISSID "XCSensors01" // change this
 //#define WIFIPASSWORD "thereisnospoon"
 
 #define DHT
@@ -124,9 +130,6 @@
 #define ACCL
 
 
-//SerialOut can be used to connect to a Kobo serial port or a HC-05, no changes needed
-#define SERIAL_MAIN Serial3
-#define SERIAL_MAINBAUD 115200 //38400  //do not use with Serial (USB) it will hang
 
 /* set HC-05 in sleep mode (via BTPINENABLE) after startup
   if the stop command is sent during startup, it will delay the sleep mode
@@ -150,7 +153,22 @@
 // Wifi Box
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
+
+
 #define SERIAL_CONFIG Serial1 //the serial port for remote config options
+//#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port
+
+
+//SerialOut means data will be sent from that port. It needs to be set to a harware serial port.
+//Best practice is only to send out to ports you will actually use.
+
+//#define SERIALOUT Serial1
+//#define SERIALOUT_MAINBAUD 38400  //do not use with Serial (USB) it will hang
+
+#define SERIALOUTBT Serial1 //Bluetooth without AT commands Serial out
+#define SERIALOUTBT_BAUD 38400 //38400  //do not use with Serial (USB) it will hang
+
+//#define SERIALUSB Serial //USB output. Usually no baud rate needed
 
 #define SERIALGPS Serial2
 #define GPS
@@ -162,7 +180,7 @@
 #define BAROADDR2 0x76
 
 
-#define ESPWIFI
+#define ESPWIFI 
 #define SERIALESP Serial3
 #define ESPAT  //use AT commands
 #define SERIALESPBAUD 115200 //Softserial of the ESP8266 can't handle high baud rates
@@ -178,10 +196,6 @@
 
 #define ACCL
 
-
-//SerialOut can be used to connect to a Kobo serial port or a HC-05, no changes needed
-#define SERIAL_MAIN Serial1
-#define SERIAL_MAINBAUD 38400  //do not use with Serial (USB) it will hang
 
 /* set HC-05 in sleep mode (via BTPINENABLE) after startup
   if the stop command is sent during startup, it will delay the sleep mode
@@ -230,5 +244,5 @@
 /////////////////////////////////////////////////////////////////////
 
 
- 
+
 

@@ -1,8 +1,7 @@
 /*
-  XCSensors by Marco van Zoest
-
-  www.primaldev.nl
-  www.primalcode.nl
+  XCSensors http://XCSensors.org
+  
+  Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +18,7 @@
 
 
 void resetACCLcompVal();
-void collectNmea6();
+void collectNmea10();
 void readVarioPressure();
 void readACCLSensor();
 void getSensorData();
