@@ -12,16 +12,16 @@ class NMEA {
   public:
     NMEA();
 
-    void setnmeaVarioLXWP0(double varioAlt, float a, float b, float c, float d, float e, float f, float magneticHeading);
+    void setnmeaVarioLXWP0(double varioAlt, float a, float b, float c, float d, float e, float f);
     void setVarioAlt(float tvarioAlt);
-    void setMagneticHeading(float magneticHeading);
     void setGforce(float gforce);
     void setNmeaVarioSentence(long rawPressure, double varioAlt, float climbRate, float temperature, float voltage);
     void setNmeaHumidSentence(int temperatureH11, int humidity);
     void setPTAS1(float cv, float av, long altitudeF);
-    char nmeaGforce[22];
-    char nmeaMag[22];
-    char nmeaVarioLXWP0[64];
+    char nmeaGforce[15];
+    char nmeaMag[15];
+    char nmeaAtt[30];
+    char nmeaVarioLXWP0[60];
     char nmeaVario[44];
     char nmeaHumid[22];
     char nmeaPTAS1[44];

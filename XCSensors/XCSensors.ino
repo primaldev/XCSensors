@@ -19,7 +19,6 @@
 #include "MS5611.h"
 #include <SimpleDHT.h>
 #include <MPU6050.h>
-#include <HMC5883L.h>
 #include "Conf.h"
 #include "SubFunctions.h"
 #include "Average.h"
@@ -52,10 +51,9 @@ int16_t ax, ay, az;
 int16_t gx, gy, gz;
 int16_t aax, aay, aaz;
 int16_t vectoraz;
+float acclOffset=0;
 #endif
-#if defined(MAG)
-int16_t mx, my, mz;
-#endif
+
 byte gi = 0;
 bool hasrun = false;
 #if defined(DHT)
@@ -92,10 +90,6 @@ TimedAction readACCL = TimedAction(ACCLREADMS, readACCLSensor); //processor to f
 MPU6050 accelgyro;
 #endif
 
-#if defined(MAG)
-HMC5883L mag;
-#endif
-
 #if defined(TEENSYDMA)
 DMAChannel dmachannel;
 #endif
@@ -128,13 +122,13 @@ void collectNmea10() {
   double realAltitude = baro.getAltitude( realPressureAv, conf.qnePressure); //Based on QN
 
   nmea_altitudeave.push(realAltitude);
-
+  
   if (nmea_altitudeave.getCount() > 9) {
     vario = nmea_altitudeave.get(9) - nmea_altitudeave.get(0);
   } else {
     vario = 0;
   }
-
+  nmea_varioave.push(vario);
   // Direct call to send ptas1
   if (conf.ptas1) { //zero deadband
     float cv = vario * 1.943 * 10 + 200;
@@ -164,7 +158,6 @@ void collectNmea10() {
   aay = (ACCLSMOOTH * aay + ay) / (ACCLSMOOTH + 1);
   aaz = (ACCLSMOOTH * aaz + az) / (ACCLSMOOTH + 1);
   vectoraz = (sqrt(pow(aax, 2) + pow(aay, 2) + pow(aaz, 2))) - 1;
-
 #endif
 
 
@@ -195,7 +188,7 @@ void readACCLSensor() {
 
 void resetACCLcompVal() {
 #if defined(ACCL)
-  conf.accloffset = -(vectoraz / 2048 ) * 1000;
+  acclOffset = -(vectoraz * 1000 / 2048 )/1000 + ACCLOFFSET;
 #endif
 }
 
@@ -222,9 +215,7 @@ void initSensors() {
   accelgyro.initialize();
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
 #endif
-#if defined(MAG)
-  mag.initialize();
-#endif
+
 }
 
 
@@ -252,21 +243,19 @@ void getSensorData() {
 #if defined(VARIO)
   varioAv = nmea_varioave.mean();
   if (conf.lxnav) {
-    nmea.setnmeaVarioLXWP0(previousAltitude, nmea_varioave.get(0), nmea_varioave.get(2), nmea_varioave.get(4), nmea_varioave.get(6), nmea_varioave.get(8), nmea_varioave.get(9), getCalcHeading()); //need to gather 6 samples
+    nmea.setnmeaVarioLXWP0(previousAltitude, nmea_varioave.get(0), nmea_varioave.get(2), nmea_varioave.get(4), nmea_varioave.get(6), nmea_varioave.get(8), nmea_varioave.get(9)); //need to gather 6 samples
     //  float volt = vRef.readVcc();
     nmea.setNmeaVarioSentence(realPressureAv, previousAltitude, varioAv, baro.getTemperature(), 0 / 1000);
   }
 #endif
 #if defined (ACCL)
-  nmea.setGforce((vectoraz / 2048) + (conf.accloffset / 1000) );
+  float gforce = float((vectoraz * 1000) / 2048)/1000 + acclOffset; //x1000 to prevent values smaller than 0.01 being discarded 
+  nmea.setGforce(gforce);
 #endif
 
 #if defined (DHT)
   dht11.read(DHT11_PIN, &dhttemperature, &dhthumidity, NULL);
   dhthumidity += DHTOFFSET;
-#endif
-#if defined (MAG)
-  mag.getHeading(&mx, &my, &mz);
 #endif
 
 
@@ -417,6 +406,7 @@ void loop() {
   if ( startTime > STARTDELAY) {    //
     startwait = true;
     runOnce();
+    
   }
 
 
@@ -425,8 +415,11 @@ void loop() {
     readVarioPressure();
     //readVario.check();
     int32_t alt =   baro.getAltitude( realPressureAv, conf.qnePressure);
-
+    
     nmea_altitudeave.push(alt);
+#endif
+#if defined(ACCL)
+    resetACCLcompVal();
 #endif
   }
 
@@ -434,7 +427,7 @@ void loop() {
   if (SERIAL_CONFIG.available()) {
     char inChar = SERIAL_CONFIG.read();
     getConfVal(inChar);
-
+   
   }
 #endif
 

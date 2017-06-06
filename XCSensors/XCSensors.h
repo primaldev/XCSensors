@@ -22,7 +22,6 @@ void collectNmea10();
 void readVarioPressure();
 void readACCLSensor();
 void getSensorData();
-
 extern int16_t mx, my, mz;
 extern bool runloop;
 extern NMEA nmea;

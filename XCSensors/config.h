@@ -26,13 +26,20 @@
 ////////////////////////////
 //Switch between different configurations
 
-//#define WIFIBOX_BT //Wifi box configuration
-#define KOBO_BT //Kobo intergrated with extra Bluetooth module
+#define WIFIBOX_BT //Wifi box configuration
+//#define KOBO_BT //Kobo intergrated with extra Bluetooth module
 
-
+///////////////////////////
+// Developer Options
 ///////////////////////////
 
 //#define DEBUG
+#define EEPROMDEVMODE //For developement. will reset the eeprom on every startup
+
+///////////////////////////
+// General Options
+///////////////////////////
+
 #define STARTDELAY 8000 //the time delay before the process starts
 #define CONFIGOPT //enable configuration option (EEPROM required)
 #define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. If disabled,
@@ -56,12 +63,13 @@
    It does it by detecting "triggers".
 */
 #define ADAPTIVEVARIO //Adapts the vario low pass filter 
-#define ADVLOWTRIGGER 0.1 //0.8 // level at witch low trigger are checked
+#define ADVLOWTRIGGER 0.4 //0.8 // level at witch low trigger are checked
 
 #define ACCLREADMS 100 //how often to read the accelerom
 #define ACCLSMOOTH 10 //Lowpass filter level
+#define ACCLOFFSET -0.93 //finetune Accl offset (includes -1G for gravity)
 
-//#define ALLFASTDATA //send all data and 6hz instead once per second. DMA channels reccomended
+//#define ALLFASTDATA //send all data at 10Hz. DMA channels reccomended
 
 /*
   As a workaround for the limited method of NMEA sentences, different sentences can be sent
@@ -116,7 +124,7 @@
 //#define ESPWIFI
 //#define SERIALESP Serial3
 //#define ESPAT  //use AT commands
-//#define SERIALESPBAUD 115200 //Softserial of the ESP8266 can't handle high baud rates
+//#define SERIALESPBAUD 115200 
 #define WIFIEN_PIN 12 //wifi enable pin 
 
 //#define WIFISSID "XCSensors01" // change this
@@ -125,7 +133,7 @@
 #define DHT
 #define DHT11_PIN 17
 #define DHTOFFSET 50 //calibrate sensor
-#define MAG
+
 
 #define ACCL
 
@@ -163,12 +171,12 @@
 //Best practice is only to send out to ports you will actually use.
 
 //#define SERIALOUT Serial1
-//#define SERIALOUT_MAINBAUD 38400  //do not use with Serial (USB) it will hang
+//#define SERIALOUT_BAUD 115200  //do not use with Serial (USB) it will hang
 
 #define SERIALOUTBT Serial1 //Bluetooth without AT commands Serial out
 #define SERIALOUTBT_BAUD 38400 //38400  //do not use with Serial (USB) it will hang
 
-//#define SERIALUSB Serial //USB output. Usually no baud rate needed
+#define SERIALOUTUSB Serial //USB output. Usually no baud rate needed
 
 #define SERIALGPS Serial2
 #define GPS
@@ -183,7 +191,7 @@
 #define ESPWIFI 
 #define SERIALESP Serial3
 #define ESPAT  //use AT commands
-#define SERIALESPBAUD 115200 //Softserial of the ESP8266 can't handle high baud rates
+#define SERIALESPBAUD 115200 
 #define WIFIEN_PIN 12 //wifi enable pin 
 
 #define WIFISSID "XCSensors" // change this 
@@ -192,7 +200,8 @@
 #define DHT
 #define DHT11_PIN 17
 #define DHTOFFSET 30 //calibrate sensor
-#define MAG
+
+#define MAG //Impractical regarding calibration and sensor placement. TODO: remove
 
 #define ACCL
 
@@ -210,8 +219,8 @@
 */
 
 
-#define BUZZER //let's go beep
-#define BUZZPIN 16 //board pin 
+//#define BUZZER //let's go beep
+//#define BUZZPIN 16 //board pin 
 
 
 

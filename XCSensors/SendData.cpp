@@ -25,14 +25,6 @@ void sendNmeaDHT() {
 
 }
 
-void sendNmeaHEading() {
-#if defined(MAG)
-  nmea.setMagneticHeading(getCalcHeading());
-  sendData(nmea.nmeaMag, conf.magChannel);
-#endif
-
-}
-
 
 void sendAccelerometor() {
 #if defined(ACCL)
@@ -46,6 +38,9 @@ void sendPTAS1() { //sends vario data every 155ms on generic GPS channel
 #endif
 }
 
+
+//Send all data
+//Here is a good spot to use configuration switches to turn stuff on and off
 void sendNmeaAll() {
 
 #if defined(VARIO)
@@ -55,9 +50,6 @@ void sendNmeaAll() {
 
   }
 
-#endif
-#if defined(MAG)
-  sendNmeaHEading();
 #endif
 
 #if defined(DHT)
@@ -70,23 +62,6 @@ void sendNmeaAll() {
 
 }
 
-float getCalcHeading() {
-#if defined(MAG)
-  float heading = atan2(my, mx);
-  if (heading < 0)
-    heading += 2 * M_PI;
-
-  heading = (heading * 180 / M_PI) + conf.magOrientation;
-
-  if (heading > 360) {
-    heading = heading - 360;
-  }
-  return heading;
-
-#else
-  return 999;
-#endif
-}
 
 #if defined(ESPWIFI)
 
@@ -170,28 +145,25 @@ void sendData(char *message, int id) {
 #endif
 
 #if defined(SERIALOUTUSB)
-  if (conf.SerialMain) {
     SERIALOUTUSB.print(message);
-    SERIALOUTUSB.print("\n");
-  }
-
+    SERIALOUTUSB.print("\n"); 
 #endif
 
 #if defined(SERIALESP)
 #if defined(ESPAT)
   if (conf.wifiMultiPort) {
     int len = getSize(message) + 1; //sizeof might be wrong
-    SERIALESP.print(F("AT+CIPSEND=")); //shaving memory
+    SERIALESP.print("AT+CIPSEND="); 
     SERIALESP.print( id );
     SERIALESP.print(F(","));
     SERIALESP.println(len);
     delay(10);
     SERIALESP.print(message);
     SERIALESP.print(F("\n\r"));
-    delay(10);
+    //delay(10);
   } else {
-    SERIALESP.println(message);
-    SERIALESP.print(F("\n\r"));
+    SERIALESP.print(message); 
+    SERIALESP.print("\n"); 
   }
 #else
 

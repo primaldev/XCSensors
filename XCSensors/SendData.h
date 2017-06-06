@@ -12,7 +12,7 @@
 
 void sendData(char *message, int id);
 void sendNmeaAll();
-float getCalcHeading();
+
 void sendPTAS1();
 
 void sendAccelerometor();

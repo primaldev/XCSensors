@@ -24,6 +24,8 @@ int eeAddress = 0;
 
 void getConfig() { //load default config values from EEPROM
 
+
+
   getConfigFromEEPROM();
   if (!conf.hasSavedtoEEPROM) {
     conf.hasSavedtoEEPROM = true;
@@ -33,6 +35,10 @@ void getConfig() { //load default config values from EEPROM
   }
 
   getConfigVars();
+
+#if defined(EEPROMDEVMODE)
+  setDefaultConfig();
+#endif
 
 }
 
@@ -55,13 +61,13 @@ void getDefaultConfig() {
   conf.AcclChannel = 4;
   //  strcpy(conf.ssid, "XCSensors");
   //  strcpy(conf.password, "thereisnospoon");
-  conf.magOrientation = 90; //correct mag accrding to device orientation
-  conf.magDeclination = 0; //in Radians. Find your declination here: http://www.magnetic-declination.com/
+  conf.magOrientation = 0; //correct mag accrding to device orientation
+  conf.magDeclination = 3; // x1000 in Radians. Find your declination here: http://www.magnetic-declination.com/ (deg + (min / 60.0)) / (180 / M_PI);
   conf.qnePressure = 101325; //QNH value to calculate vario Altitude
   conf.varioDeadBand = 100; // X 1000 levels lower than this = 0. (ignored by ptas1)
-  conf.wifiMultiPort = true; //use different ports for NMEA sentences, or only the gps port
-  conf.SerialMain = true; //only send data to the one serial. reset needed to start WIFI
-  conf.ptas1 = true; // send ptas1 nmea, uses the gps channel (once every 155ms)
+  conf.wifiMultiPort = false; //use different ports for NMEA sentences, or only the gps port
+  conf.SerialMain = false; //only send data to the one serial. reset needed to start WIFI
+  conf.ptas1 = true; // send ptas1 nmea, uses the gps channel (once every 100ms)
   conf.lxnav = false; //send vario lxnav sentence
   conf.accloffset = 0; //manual offset for accl x 1000
   conf.variosmooth = 15; //low pass filter, the higher the number the slower the raw vario reading changes.
@@ -81,7 +87,7 @@ void getDefaultConfig() {
 void printaf(int n) {
   switch (n) {
 
-    case 1: SERIAL_CONFIG.print(F("1) Serial Only, Wifi or BT Disable")); break;
+    case 1: SERIAL_CONFIG.print(F("1) Serial Only, Wifi or BT Disable: ")); break;
     case 2: SERIAL_CONFIG.print(F("2) Wifi Multiport: ")); break;
     case 3: SERIAL_CONFIG.print(F("3) GPS Channel: ")); break;
     case 4: SERIAL_CONFIG.print(F("4) Vario Channel: ")); break;
@@ -95,7 +101,7 @@ void printaf(int n) {
     case 12: SERIAL_CONFIG.print(F("12) Vario deadband (x1000): ")); break;
     case 14: SERIAL_CONFIG.print(F("14) Send PTAS: ")); break;
     case 16: SERIAL_CONFIG.print(F("16) Send LXNAV: ")); break;
-    case 17: SERIAL_CONFIG.print(F("17) Accl manual offset x1000: ")); break;
+ //   case 17: SERIAL_CONFIG.print(F("17) Accl manual offset x1000: ")); break;
     case 18: SERIAL_CONFIG.print(F("18) Vario smoothness level: ")); break;
     case 20: SERIAL_CONFIG.print(F("20) Enable Vario Audio: ")); break;
     case 21: SERIAL_CONFIG.print(F("21) Vario Audio asc deadband x1000: ")); break;
@@ -154,13 +160,13 @@ void getConfigVars() { // order is not that important
 #if defined (SERIAL_CONFIG)
   printhd();
   printaf(1);
-  SERIAL_CONFIG.print( getStringFromBool(conf.SerialMain));
+  SERIAL_CONFIG.print( getStringFromBool(conf.SerialMain)); 
   printtf();
   printaf(2);
   SERIAL_CONFIG.print(getStringFromBool(conf.wifiMultiPort));
   printtf();
   printaf(3);
-  SERIAL_CONFIG.print(conf.GPSChannel);
+  SERIAL_CONFIG.print(conf.GPSChannel);  //TODO: remove
   printtf();
   printaf(4);
   SERIAL_CONFIG.print(conf.varioChannel);
@@ -196,9 +202,9 @@ void getConfigVars() { // order is not that important
   SERIAL_CONFIG.print(conf.lxnav);
   printtf();
   printaf(17);
-  SERIAL_CONFIG.print(conf.accloffset);
-  printtf();
-  printaf(18);
+ // SERIAL_CONFIG.print(conf.accloffset);
+ // printtf();
+ // printaf(18);
   SERIAL_CONFIG.print(conf.variosmooth);
   printtf();
   printaf(20);
@@ -268,11 +274,11 @@ void setConf(int varname, char *value) {
     case 0: setDefaultConfig(); break;//load defaults
     case 1: conf.SerialMain = getBoolFromVal(value); break;
     case 2: conf.wifiMultiPort = getBoolFromVal(value); break;
-    case 3: conf.GPSChannel = atoi(value); break;
-    case 4: conf.varioChannel = atoi(value); break;
-    case 5: conf.humidChannel = atoi(value); break;
-    case 6: conf.magChannel = atoi(value); break;
-    case 7: conf.AcclChannel = atoi(value); break;
+    case 3: conf.GPSChannel = atoi(value); break;  //TODO: remove
+    case 4: conf.varioChannel = atoi(value); break; //TODO: remove
+    case 5: conf.humidChannel = atoi(value); break; //TODO: remove
+    case 6: conf.magChannel = atoi(value); break; //TODO: remove
+    case 7: conf.AcclChannel = atoi(value); break; //TODO: remove
     //case 8: strcpy(conf.ssid, value); break;
     case 9: conf.magOrientation = atoi(value); break;
     case 10: conf.magDeclination = atoi(value); break;
@@ -280,7 +286,7 @@ void setConf(int varname, char *value) {
     case 12: conf.varioDeadBand = atoi(value); break;
     case 14: conf.ptas1 = getBoolFromVal(value); break;
     case 16: conf.lxnav = getBoolFromVal(value); break;
-    case 17: conf.accloffset = atoi(value); break;
+  //  case 17: conf.accloffset = atoi(value); break; //deprecated
     case 18: conf.variosmooth = atoi(value); break;
     case 20: conf.buzzer = getBoolFromVal(value); break;
     case 21: conf.varioAudioDeadBand = atoi(value); break;
