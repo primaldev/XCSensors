@@ -48,7 +48,7 @@ void GPSstuff(char c) {                                         // GPSbuffer[] i
 
   if (flag) {                                                   // test for end of line and if the right GPSbuffer
     flag = false;                                               // reset for next time
-    sendData(GPSbuffer, conf.GPSChannel);
+    sendData(GPSbuffer);
 
     memset(GPSbuffer, 0, sizeof(GPSbuffer));
   }

@@ -10,14 +10,12 @@
 */
 
 
-void sendData(char *message, int id);
+void sendData(char *message);
 void sendNmeaAll();
 
 void sendPTAS1();
 
 void sendAccelerometor();
-void setESPMulti();
 
-void setESPBroadCast();
-void setSendData();
+void setSendDataMultiCast();
 

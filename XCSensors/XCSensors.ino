@@ -23,8 +23,6 @@
 #include "SubFunctions.h"
 #include "Average.h"
 #include "SendData.h"
-#include "DMAChannel.h"
-
 #include "Audio.h"
 
 
@@ -383,7 +381,7 @@ void setup() {
   initSensors();
 
 #if defined(ESPAT)
-  setSendData();
+ setSendDataMultiCast();
 #endif
 
 

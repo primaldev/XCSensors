@@ -21,31 +21,34 @@ void getConfigVars() ;
 void getDefaultConfig();
 void getConfVal(char c);
 
+const int C_SerialMain=1;
+const int C_qnePressure=5;
+const int C_varioDeadBand=6;
+const int C_ptas1=7;
+const int C_lxnav=8;
+const int C_variosmooth=9;
+const int C_buzzer=10;
+const int C_varioAudioDeadBand=11;
+const int C_varioAudioSinkDeadBand=12;
+const int C_advTriggerTime=13;
+const int C_advRelaxTime=14;
+const int C_advMinSmooth=15;
+const int C_advMaxSmooth=16;
+
+
 typedef struct {
   bool hasSavedtoEEPROM;
-  int  GPSChannel;
-  int  varioChannel;
-  int humidChannel;
-  int AcclChannel;
-  int magChannel;
-  //char ssid[32];
-  //char password[32];
   double qnePressure;
   int varioDeadBand;
   int magOrientation;
   int magDeclination;
-  bool wifiMultiPort;
   bool SerialMain;
   bool ptas1;
-
   bool lxnav;
-  int accloffset;
   byte variosmooth;
-
   bool buzzer;
   int varioAudioDeadBand;
   int varioAudioSinkDeadBand;
-
   int advTriggerTime;
   int advRelaxTime;
   byte advMinSmooth;

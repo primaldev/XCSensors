@@ -54,22 +54,11 @@ void setDefaultConfig() {
 }
 
 void getDefaultConfig() {
-  conf.GPSChannel = 1;
-  conf.varioChannel = 2;
-  conf.humidChannel = 3;
-  conf.magChannel = 1;
-  conf.AcclChannel = 4;
-  //  strcpy(conf.ssid, "XCSensors");
-  //  strcpy(conf.password, "thereisnospoon");
-  conf.magOrientation = 0; //correct mag accrding to device orientation
-  conf.magDeclination = 3; // x1000 in Radians. Find your declination here: http://www.magnetic-declination.com/ (deg + (min / 60.0)) / (180 / M_PI);
   conf.qnePressure = 101325; //QNH value to calculate vario Altitude
   conf.varioDeadBand = 100; // X 1000 levels lower than this = 0. (ignored by ptas1)
-  conf.wifiMultiPort = false; //use different ports for NMEA sentences, or only the gps port
   conf.SerialMain = false; //only send data to the one serial. reset needed to start WIFI
   conf.ptas1 = true; // send ptas1 nmea, uses the gps channel (once every 100ms)
   conf.lxnav = false; //send vario lxnav sentence
-  conf.accloffset = 0; //manual offset for accl x 1000
   conf.variosmooth = 15; //low pass filter, the higher the number the slower the raw vario reading changes.
   conf.buzzer = true; // turn vario audio on or off
   conf.varioAudioDeadBand = 100; //X 1000
@@ -87,30 +76,19 @@ void getDefaultConfig() {
 void printaf(int n) {
   switch (n) {
 
-    case 1: SERIAL_CONFIG.print(F("1) Serial Only, Wifi or BT Disable: ")); break;
-    case 2: SERIAL_CONFIG.print(F("2) Wifi Multiport: ")); break;
-    case 3: SERIAL_CONFIG.print(F("3) GPS Channel: ")); break;
-    case 4: SERIAL_CONFIG.print(F("4) Vario Channel: ")); break;
-    case 5: SERIAL_CONFIG.print(F("5) Humid Sensor Channel: ")); break;
-    case 6: SERIAL_CONFIG.print(F("6) Mag track Channel: ")); break;
-    case 7: SERIAL_CONFIG.print(F("7) Accl Channel: ")); break;
-
-    case 9:  SERIAL_CONFIG.print(F("9)  Magnetic Orientation: ")); break;
-    case 10: SERIAL_CONFIG.print(F("10) Magentic Declination: ")); break;
-    case 11: SERIAL_CONFIG.print(F("11) QNE Pressure: ")); break;
-    case 12: SERIAL_CONFIG.print(F("12) Vario deadband (x1000): ")); break;
-    case 14: SERIAL_CONFIG.print(F("14) Send PTAS: ")); break;
-    case 16: SERIAL_CONFIG.print(F("16) Send LXNAV: ")); break;
- //   case 17: SERIAL_CONFIG.print(F("17) Accl manual offset x1000: ")); break;
-    case 18: SERIAL_CONFIG.print(F("18) Vario smoothness level: ")); break;
-    case 20: SERIAL_CONFIG.print(F("20) Enable Vario Audio: ")); break;
-    case 21: SERIAL_CONFIG.print(F("21) Vario Audio asc deadband x1000: ")); break;
-    case 22: SERIAL_CONFIG.print(F("22) Vario audio sink deadband x1000: ")); break;
-    case 24: SERIAL_CONFIG.print(F("24) Adaptive vario trigger time: ")); break;
-    case 25: SERIAL_CONFIG.print(F("25) Adaptive vario relax time: ")); break;
-    case 26: SERIAL_CONFIG.print(F("26) Adaptive vario minimum smooth level: ")); break;
-    case 27: SERIAL_CONFIG.print(F("27) Adaptive vario maximum smooth level: ")); break;
-
+    case C_SerialMain: SERIAL_CONFIG.print(F("1) Serial Only, Wifi or BT Disable: ")); break;
+    case C_qnePressure: SERIAL_CONFIG.print(F("11) QNE Pressure: ")); break;
+    case C_varioDeadBand: SERIAL_CONFIG.print(F("12) Vario deadband (x1000): ")); break;
+    case C_ptas1: SERIAL_CONFIG.print(F("14) Send PTAS: ")); break;
+    case C_lxnav: SERIAL_CONFIG.print(F("16) Send LXNAV: ")); break;
+    case C_variosmooth: SERIAL_CONFIG.print(F("18) Vario smoothness level: ")); break;
+    case C_buzzer: SERIAL_CONFIG.print(F("20) Enable Vario Audio: ")); break;
+    case C_varioAudioDeadBand: SERIAL_CONFIG.print(F("21) Vario Audio asc deadband x1000: ")); break;
+    case C_varioAudioSinkDeadBand: SERIAL_CONFIG.print(F("22) Vario audio sink deadband x1000: ")); break;
+    case C_advTriggerTime: SERIAL_CONFIG.print(F("24) Adaptive vario trigger time: ")); break;
+    case C_advRelaxTime: SERIAL_CONFIG.print(F("25) Adaptive vario relax time: ")); break;
+    case C_advMinSmooth: SERIAL_CONFIG.print(F("26) Adaptive vario minimum smooth level: ")); break;
+    case C_advMaxSmooth: SERIAL_CONFIG.print(F("27) Adaptive vario maximum smooth level: ")); break;
 
   }
 
@@ -162,33 +140,6 @@ void getConfigVars() { // order is not that important
   printaf(1);
   SERIAL_CONFIG.print( getStringFromBool(conf.SerialMain)); 
   printtf();
-  printaf(2);
-  SERIAL_CONFIG.print(getStringFromBool(conf.wifiMultiPort));
-  printtf();
-  printaf(3);
-  SERIAL_CONFIG.print(conf.GPSChannel);  //TODO: remove
-  printtf();
-  printaf(4);
-  SERIAL_CONFIG.print(conf.varioChannel);
-  printtf();
-  printaf(5);
-  SERIAL_CONFIG.print(conf.humidChannel);
-  printtf();
-  printaf(6);
-  SERIAL_CONFIG.print(conf.magChannel);
-  printtf();
-  printaf(7);
-  SERIAL_CONFIG.print(conf.AcclChannel);
-  printtf();
-  //  printaf(8);
-  //  SERIAL_CONFIG.print(conf.ssid);
-  //  printtf();
-  //  printaf(9);
-  SERIAL_CONFIG.print(conf.magOrientation);
-  printtf();
-  printaf(10);
-  SERIAL_CONFIG.print(conf.magDeclination);
-  printtf();
   printaf(11);
   SERIAL_CONFIG.print(String(conf.qnePressure));
   printtf();
@@ -202,9 +153,6 @@ void getConfigVars() { // order is not that important
   SERIAL_CONFIG.print(conf.lxnav);
   printtf();
   printaf(17);
- // SERIAL_CONFIG.print(conf.accloffset);
- // printtf();
- // printaf(18);
   SERIAL_CONFIG.print(conf.variosmooth);
   printtf();
   printaf(20);
@@ -267,34 +215,23 @@ bool getBoolFromVal(char *sval) { //TODO: process Boolean values
   }
 }
 
-
 void setConf(int varname, char *value) {
-
+    
   switch (varname) {
     case 0: setDefaultConfig(); break;//load defaults
-    case 1: conf.SerialMain = getBoolFromVal(value); break;
-    case 2: conf.wifiMultiPort = getBoolFromVal(value); break;
-    case 3: conf.GPSChannel = atoi(value); break;  //TODO: remove
-    case 4: conf.varioChannel = atoi(value); break; //TODO: remove
-    case 5: conf.humidChannel = atoi(value); break; //TODO: remove
-    case 6: conf.magChannel = atoi(value); break; //TODO: remove
-    case 7: conf.AcclChannel = atoi(value); break; //TODO: remove
-    //case 8: strcpy(conf.ssid, value); break;
-    case 9: conf.magOrientation = atoi(value); break;
-    case 10: conf.magDeclination = atoi(value); break;
-    case 11: conf.qnePressure = atoi(value); break;
-    case 12: conf.varioDeadBand = atoi(value); break;
-    case 14: conf.ptas1 = getBoolFromVal(value); break;
-    case 16: conf.lxnav = getBoolFromVal(value); break;
-  //  case 17: conf.accloffset = atoi(value); break; //deprecated
-    case 18: conf.variosmooth = atoi(value); break;
-    case 20: conf.buzzer = getBoolFromVal(value); break;
-    case 21: conf.varioAudioDeadBand = atoi(value); break;
-    case 22: conf.varioAudioSinkDeadBand = atoi(value); break;
-    case 24: conf.advTriggerTime = atoi(value); break;
-    case 25: conf.advRelaxTime = atoi(value); break;
-    case 26: conf.advMinSmooth = atoi(value); break;
-    case 27: conf.advMaxSmooth = atoi(value); break;
+    case C_SerialMain: conf.SerialMain = getBoolFromVal(value); break;
+    case C_qnePressure: conf.qnePressure = atoi(value); break; 
+    case C_varioDeadBand: conf.varioDeadBand = atoi(value); break;
+    case C_ptas1: conf.ptas1 = getBoolFromVal(value); break;
+    case C_lxnav: conf.lxnav = getBoolFromVal(value); break;
+    case C_variosmooth: conf.variosmooth = atoi(value); break;
+    case C_buzzer: conf.buzzer = getBoolFromVal(value); break;
+    case C_varioAudioDeadBand: conf.varioAudioDeadBand = atoi(value); break;
+    case C_varioAudioSinkDeadBand: conf.varioAudioSinkDeadBand = atoi(value); break;
+    case C_advTriggerTime: conf.advTriggerTime = atoi(value); break;
+    case C_advRelaxTime: conf.advRelaxTime = atoi(value); break;
+    case C_advMinSmooth: conf.advMinSmooth = atoi(value); break;
+    case C_advMaxSmooth: conf.advMaxSmooth = atoi(value); break;
     case 100: saveConfigToEEPROM(); break; //save to eeprom
     case 106: resetACCLcompVal(); // quick set the ACCL to 0
     case 101: getConfigVars(); break; // get config for app

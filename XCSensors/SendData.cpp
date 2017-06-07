@@ -20,7 +20,7 @@ void sendNmeaDHT() {
 #if defined(DHT)
   int temp = (dhttemperature + 273.15) * 10;
   nmea.setNmeaHumidSentence(temp, dhthumidity);
-  sendData(nmea.nmeaHumid, conf.humidChannel);
+  sendData(nmea.nmeaHumid);
 #endif
 
 }
@@ -28,13 +28,13 @@ void sendNmeaDHT() {
 
 void sendAccelerometor() {
 #if defined(ACCL)
-  sendData(nmea.nmeaGforce, conf.AcclChannel);
+  sendData(nmea.nmeaGforce);
 #endif
 }
 
 void sendPTAS1() { //sends vario data every 155ms on generic GPS channel
 #if defined(VARIO)
-  sendData(nmea.nmeaPTAS1, conf.GPSChannel);
+  sendData(nmea.nmeaPTAS1);
 #endif
 }
 
@@ -45,8 +45,8 @@ void sendNmeaAll() {
 
 #if defined(VARIO)
   if (conf.lxnav) {
-    sendData(nmea.nmeaVarioLXWP0, conf.varioChannel);
-    sendData(nmea.nmeaVario, conf.varioChannel);
+    sendData(nmea.nmeaVarioLXWP0);
+    sendData(nmea.nmeaVario);
 
   }
 
@@ -88,18 +88,8 @@ void startESPSoftAP() {
   delay(1000);
 }
 
-void setESPMulti() {
 
-  startESPSoftAP();
-  SERIALESP.println(F("AT+CIPMUX=1"));
-  delay(500);
-  setESPPort(1, CHANNEL1PORT);
-  setESPPort(2, CHANNEL2PORT);
-  setESPPort(3, CHANNEL3PORT);
-  setESPPort(4, CHANNEL4PORT);
-}
-
-void setESPBroadCast() {
+void setSendDataMultiCast() {
   startESPSoftAP();
   SERIALESP.print(F("AT+CIPSTART=\"UDP\",\"255.255.255.255\","));
   SERIALESP.println(CHANNEL1PORT);
@@ -108,16 +98,7 @@ void setESPBroadCast() {
   delay(500);
   SERIALESP.println(F("AT+CIPSEND"));
 }
-
 #endif
-
-void setSendData() {
-  if (conf.wifiMultiPort) {
-    setESPMulti();
-  } else {
-    setESPBroadCast();
-  }
-}
 
 int getSize(char* ch) {
   int tmp = 0;
@@ -129,7 +110,7 @@ int getSize(char* ch) {
 }
 
 
-void sendData(char *message, int id) {
+void sendData(char *message) {
 #if defined(SERIALOUT)
   if (conf.SerialMain) {
     SERIALOUT.print(message);
@@ -151,20 +132,10 @@ void sendData(char *message, int id) {
 
 #if defined(SERIALESP)
 #if defined(ESPAT)
-  if (conf.wifiMultiPort) {
-    int len = getSize(message) + 1; //sizeof might be wrong
-    SERIALESP.print("AT+CIPSEND="); 
-    SERIALESP.print( id );
-    SERIALESP.print(F(","));
-    SERIALESP.println(len);
-    delay(10);
-    SERIALESP.print(message);
-    SERIALESP.print(F("\n\r"));
-    //delay(10);
-  } else {
+
     SERIALESP.print(message); 
     SERIALESP.print("\n"); 
-  }
+  
 #else
 
   SERIALESP.print(message);
