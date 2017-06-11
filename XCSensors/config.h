@@ -17,8 +17,8 @@
 //There can be only one
 
 
-#define TEENSY
-//#define STM32F103R
+//#define TEENSY                  //Don't forget to change Arduino Settings
+#define STM32F103R
 
 
 /////////////////////////////
@@ -26,8 +26,8 @@
 ////////////////////////////
 //Switch between different configurations
 
-//#define WIFIBOX_BT //Wifi box configuration
-#define KOBO_BT //Kobo intergrated with extra Bluetooth module
+#define WIFIBOX_BT //Wifi box configuration
+//#define KOBO_BT //Kobo intergrated with extra Bluetooth module
 
 ///////////////////////////
 // Developer Options
@@ -90,7 +90,7 @@
 #if defined(STM32F103R)
 
 /////////////////////////////////////////////////////////////////////
-// Kobo Integrated
+//STM32F103R Kobo Integrated
 /////////////////////////////////////////////////////////////////////
 
 #if defined(KOBO_BT)
@@ -156,7 +156,7 @@
 #endif
 
 /////////////////////////////////////////////////////////////////////
-// Wifi Box
+//STM32F103R Wifi Box
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
 
@@ -171,10 +171,10 @@
 //Best practice is only to send out to ports you will actually use.
 
 //#define SERIALOUT Serial1
-//#define SERIALOUT_BAUD 115200  //do not use with Serial (USB) it will hang
+//#define SERI ALOUT_BAUD 115200  //do not use with Serial (USB) it will hang
 
 #define SERIALOUTBT Serial1 //Bluetooth without AT commands Serial out
-#define SERIALOUTBT_BAUD 38400 //38400  //do not use with Serial (USB) it will hang
+#define SERIALOUTBT_BAUD 115000 //38400  //do not use with Serial (USB) it will hang
 
 #define SERIALOUTUSB  Serial //USB output. Usually no baud rate needed
 
@@ -182,9 +182,9 @@
 #define GPS
 #define SERIALGPSBAUD 9600 // serial1 speed
 
-//#define VARIO
+#define VARIO
 //#define VARIO2 //if 2nd vario
-//#define BAROADDR 0x77
+#define BAROADDR 0x77
 //#define BAROADDR2 0x76
 
 
@@ -197,9 +197,9 @@
 #define WIFISSID "XCSensors" // change this 
 #define WIFIPASSWORD "thereisnospoon"
 
-//#define DHT
-//#define DHT11_PIN 17
-//#define DHTOFFSET 30 //calibrate sensor
+#define DHT
+#define DHT11_PIN PB1
+#define DHTOFFSET 0 //calibrate sensor
 
 
 //#define ACCL
@@ -235,7 +235,7 @@
 #elif defined(TEENSY)
 
 /////////////////////////////////////////////////////////////////////
-// Kobo Integrated
+//TEENSY Kobo Integrated
 /////////////////////////////////////////////////////////////////////
 
 #if defined(KOBO_BT)
@@ -304,7 +304,7 @@
 #endif
 
 /////////////////////////////////////////////////////////////////////
-// Wifi Box
+//TEENSY Wifi Box
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
 #define CONFIGOPT //enable configuration option (EEPROM required)

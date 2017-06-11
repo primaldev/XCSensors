@@ -121,10 +121,10 @@ char newl[2] = "\n";
 #endif
 
 #if defined(SERIALOUTBT)
-  if (conf.SerialMain) {
+  //if (!conf.SerialMain) {
     SERIALOUTBT.print(message);
     SERIALOUTBT.print(newl);
-  }
+ // }
 #endif
 
 #if defined(SERIALOUTUSB)
