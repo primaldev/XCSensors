@@ -18,12 +18,11 @@
 #include "XCSensors.h"
 
 #if defined(BUZZER)
-unsigned long stime = 0;
-unsigned long ttime = 0;
-unsigned long sinktime = 0;
-bool toneon = true;
-bool playtone = false;
 bool climbing = false;
+int tm;
+int stime;
+byte toneOn=false;
+byte muted=false;
 #endif
 
 #if defined(TESTBUZZER)
@@ -37,7 +36,29 @@ float testvario = 0;
 #define BASEPULSE 200
 #define TOPPULSE  1000
 
-void makeSound(float vario) {
+
+
+// Non-Blocking beep beep beep
+void playToneInterval(int freq, int period, int interval) {  
+
+  if (toneOn) {
+    int wait = period + interval + tm;
+
+    if ( wait < millis()) {
+      toneOn = false;
+      noTone(BUZZPIN);
+    }
+    
+  }else {
+    tone(BUZZPIN, freq, period);
+    toneOn =true; 
+    tm=millis();
+  }
+  
+}
+
+
+void makeVarioAudio(float vario) {
   int pulse;
   float varioorg = vario;
   if (takeoff) {
@@ -57,82 +78,43 @@ void makeSound(float vario) {
 
   Serial.println(vario);
 #endif
-
+  
   if (vario > 9) {
     vario = 9;
 
   }
 
-  int variof = (fabs(vario) * 200 ) + 800;
-
-  if (vario >= double(conf.varioAudioDeadBand) / 1000) {
-
-    pulse = TOPPULSE / (vario * 10) + 100;
-
-  } else {
-    pulse = BASEPULSE;
-  }
-
-#if defined(SOARDETECTION) && !defined(TESTBUZZER)
+  #if defined(SOARDETECTION) && !defined(TESTBUZZER)
 
   if (varioorg > -0.2 && varioorg < 0.2) {
     int diffe = millis() - stime;
     if (diffe >  SOARDETECTION) {
-      playtone = false;
+      muted = true;
     }
   } else {
     stime = millis();
+    muted = false;
   }
 
 #endif
 
+  int variof = (fabs(vario) * 200 ) + 800;
 
-  if (playtone) {
-
-    if (vario > double(conf.varioAudioDeadBand) / 1000 ) {
-      tone(BUZZPIN, variof);
-      climbing = true;
-      playtone = false;
-    } else if (vario < -double(conf.varioAudioSinkDeadBand) / 1000 ) {
-      pulse = BASEPULSE;
-      tone(BUZZPIN, 200);
-      playtone = false;
-    } else {
-
-      if (climbing ) { //dropped out of the thermal
-        pulse = 2000;
-        tone(BUZZPIN, 100);
-        int diffsk = millis() - stime;
-        if (diffsk > OUTOFTHERMALBUZZT) {
-          climbing = false;
-        }
-      } else {
-        sinktime = millis();
+  if (vario >= double(conf.varioAudioDeadBand) / 1000) {
+    pulse = TOPPULSE / (vario * 10) + 100;
+    if(!muted) {
+      playToneInterval(variof, pulse, pulse/2);
+    }
+    climbing=true;
+  } else {
+      if (climbing ) { //dropped out of the thermal       
+        tone(BUZZPIN, 100, OUTOFTHERMALBUZZT);
+        climbing = false;
       }
-
-    }
   }
-
-  int diff = millis() - ttime;
-
-  if (diff > pulse) {
-    noTone(BUZZPIN);
-    //pinMode(BUZZPIN, INPUT);
-
-    if (toneon) {
-      toneon = false;
-      playtone = false;
-      // pinMode(BUZZPIN, INPUT);
-      ttime = millis() - 40;
-    } else  {
-      toneon = true;
-      playtone = true;
-      ttime = millis() + 20;
-
-    }
-  }
-
+  
 }
+
 
 #endif
 

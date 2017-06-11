@@ -14,7 +14,7 @@
 #include <Arduino.h>
 #include "XCSensors.h"
 #include <TimedAction.h>
-#include <Wire.h>
+#include <Wire.h> //For STM32 copy lib from http://www.stm32duino.com/viewtopic.php?t=6 to the stm32 harware lib folder (also correct the .\ error)
 #include "config.h"
 #include "MS5611.h"
 #include <SimpleDHT.h>
@@ -100,11 +100,11 @@ NMEA nmea;
 //----------------------------------------------------------------------------//
 
 void ledOn() {
-  digitalWrite(13, HIGH);
+  digitalWrite(LEDPIN, HIGH);
 }
 
 void ledOff() {
-  digitalWrite(13, LOW);
+  digitalWrite(LEDPIN, LOW);
 }
 
 
@@ -449,20 +449,24 @@ void loop() {
     readACCL.check();
 #endif
 
+#if defined(TAKEOFFVARIO)
     if ( startTime > STARTDELAY + 4000 && !takeoff) {
       if (fabs(vario) > TAKEOFFVARIO) {
         takeoff = true;
       }
 
     }
+#else
+  takeoff = true;
+#endif
 
 #if defined(BUZZER)
     trun++;
 
     if (conf.buzzer && trun > BUZZERCYCLE) {
-      if (takeoff) {
-        makeSound(vario);
-      }
+     if (takeoff) { 
+        makeVarioAudio(vario);
+     }
       trun = 0;
     }
 

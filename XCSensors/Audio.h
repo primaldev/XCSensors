@@ -12,5 +12,6 @@
 #if defined(BUZZER)
 void makeSound(float vario);
 void makeSoundp(int32_t tpressure);
-
+void makeVarioAudio(float vario);
+void playToneInterval(int freq, int period, int interval);
 #endif

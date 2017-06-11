@@ -18,7 +18,7 @@
 
 
 #define TEENSY
-
+//#define STM32F103R
 
 
 /////////////////////////////
@@ -26,14 +26,14 @@
 ////////////////////////////
 //Switch between different configurations
 
-#define WIFIBOX_BT //Wifi box configuration
-//#define KOBO_BT //Kobo intergrated with extra Bluetooth module
+//#define WIFIBOX_BT //Wifi box configuration
+#define KOBO_BT //Kobo intergrated with extra Bluetooth module
 
 ///////////////////////////
 // Developer Options
 ///////////////////////////
 
-//#define DEBUG
+#define DEBUG
 #define EEPROMDEVMODE //For developement. will reset the eeprom on every startup
 
 ///////////////////////////
@@ -41,7 +41,7 @@
 ///////////////////////////
 
 #define STARTDELAY 8000 //the time delay before the process starts
-#define CONFIGOPT //enable configuration option (EEPROM required)
+
 #define HUMANCONFIG //display human readable config menu. Values are entered as 1=on, one at a time. If disabled,
 // it can be used by an external app and multiple values can be sent, handy for programs eg: <1=on>
 
@@ -63,7 +63,7 @@
    It does it by detecting "triggers".
 */
 #define ADAPTIVEVARIO //Adapts the vario low pass filter 
-#define ADVLOWTRIGGER 0.4 //0.8 // level at witch low trigger are checked
+#define ADVLOWTRIGGER 0.2 //0.8 // level at witch low trigger are checked
 
 #define ACCLREADMS 100 //how often to read the accelerom
 #define ACCLSMOOTH 10 //Lowpass filter level
@@ -84,17 +84,163 @@
 
 
 /////////////////////////////
-// Board TEENSY
-////////////////////////////
+// MCU Board STM32F103
+/////////////////////////////
 
-
-#if defined(TEENSY)
+#if defined(STM32F103R)
 
 /////////////////////////////////////////////////////////////////////
 // Kobo Integrated
 /////////////////////////////////////////////////////////////////////
 
 #if defined(KOBO_BT)
+//#define CONFIGOPT //enable configuration option (EEPROM required)
+#define LEDPIN PC13
+#define SERIAL_CONFIG Serial3 //the serial port for remote config options
+#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG is not sharing with a SERIALOUT* type port 
+
+//SerialOut means data will be sent from that port. It needs to be set to a harware serial port.
+//Best practice is only to send out to ports you will actually use.
+
+#define SERIALOUT Serial1 //Serial1=kobo
+#define SERIALOUT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
+
+//#define SERIALOUTBT Serial3 //Bluetooth without AT commands Serial out
+//#define SERIALOUTBT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
+
+//#define SERIALOUTUSB  Serial //USB output
+
+#define SERIALGPS Serial2
+#define GPS
+#define SERIALGPSBAUD 115200
+
+#define VARIO
+#define VARIO2 //if 2nd vario
+
+#define BAROADDR 0x77
+#define BAROADDR2 0x76
+
+
+//#define ESPWIFI
+//#define SERIALESP Serial3
+//#define ESPAT  //use AT commands
+//#define SERIALESPBAUD 115200 
+#define WIFIEN_PIN 12 //wifi enable pin 
+
+//#define WIFISSID "XCSensors01" // change this
+//#define WIFIPASSWORD "thereisnospoon"
+
+#define DHT
+#define DHT11_PIN 17
+#define DHTOFFSET 50 //calibrate sensor
+
+
+#define ACCL
+
+/* set HC-05 in sleep mode (via BTPINENABLE) after startup
+  if the stop command is sent during startup, it will delay the sleep mode
+  until start command.
+*/
+#define BTENPIN 2 //pin to enable HC-05
+#define BTSLEEP  //enable sleep mode
+/*Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400)
+  AT+UART=38400,1,0 //115200 had problems
+  AT+NAME=iXsensors0A
+  AT+PSWD=1234
+*/
+
+#define BUZZER //let's go beep
+#define BUZZPIN 16 //board pin 
+
+
+#endif
+
+/////////////////////////////////////////////////////////////////////
+// Wifi Box
+/////////////////////////////////////////////////////////////////////
+#if defined(WIFIBOX_BT)
+
+//#define CONFIGOPT //enable configuration option (EEPROM required)
+#define LEDPIN PC13
+
+#define SERIAL_CONFIG Serial //the serial port for remote config options
+#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port
+
+
+//SerialOut means data will be sent from that port. It needs to be set to a harware serial port.
+//Best practice is only to send out to ports you will actually use.
+
+//#define SERIALOUT Serial1
+//#define SERIALOUT_BAUD 115200  //do not use with Serial (USB) it will hang
+
+#define SERIALOUTBT Serial1 //Bluetooth without AT commands Serial out
+#define SERIALOUTBT_BAUD 38400 //38400  //do not use with Serial (USB) it will hang
+
+#define SERIALOUTUSB  Serial //USB output. Usually no baud rate needed
+
+#define SERIALGPS Serial2
+#define GPS
+#define SERIALGPSBAUD 9600 // serial1 speed
+
+//#define VARIO
+//#define VARIO2 //if 2nd vario
+//#define BAROADDR 0x77
+//#define BAROADDR2 0x76
+
+
+//#define ESPWIFI 
+//#define SERIALESP Serial3
+//#define ESPAT  //use AT commands
+//#define SERIALESPBAUD 115200 
+//#define WIFIEN_PIN 12 //wifi enable pin 
+
+#define WIFISSID "XCSensors" // change this 
+#define WIFIPASSWORD "thereisnospoon"
+
+//#define DHT
+//#define DHT11_PIN 17
+//#define DHTOFFSET 30 //calibrate sensor
+
+
+//#define ACCL
+
+
+/* set HC-05 in sleep mode (via BTPINENABLE) after startup
+  if the stop command is sent during startup, it will delay the sleep mode
+  until start command.
+*/
+#define BTENPIN 2 //pin to enable HC-05
+#define BTSLEEP  //enable sleep mode
+/*Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400)
+  AT+UART=38400,1,0 //115200 had problems
+  AT+NAME=iXsensors0A
+  AT+PSWD=1234
+*/
+
+
+#define BUZZER //let's go beep
+#define BUZZPIN PB0 //board pin 
+
+
+
+#endif //WIFIBOX
+
+
+
+/////////////////////////////
+// MCU Board TEENSY
+////////////////////////////
+
+
+#elif defined(TEENSY)
+
+/////////////////////////////////////////////////////////////////////
+// Kobo Integrated
+/////////////////////////////////////////////////////////////////////
+
+#if defined(KOBO_BT)
+#define CONFIGOPT //enable configuration option (EEPROM required)
+#define LEDPIN 13
 
 #define SERIAL_CONFIG Serial3 //the serial port for remote config options
 #define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG is not sharing with a SERIALOUT* type port 
@@ -161,11 +307,11 @@
 // Wifi Box
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
-
+#define CONFIGOPT //enable configuration option (EEPROM required)
 
 #define SERIAL_CONFIG Serial1 //the serial port for remote config options
 //#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port
-
+#define LEDPIN 13
 
 //SerialOut means data will be sent from that port. It needs to be set to a harware serial port.
 //Best practice is only to send out to ports you will actually use.
@@ -201,7 +347,6 @@
 #define DHT11_PIN 17
 #define DHTOFFSET 30 //calibrate sensor
 
-#define MAG //Impractical regarding calibration and sensor placement. TODO: remove
 
 #define ACCL
 
@@ -219,8 +364,8 @@
 */
 
 
-//#define BUZZER //let's go beep
-//#define BUZZPIN 16 //board pin 
+#define BUZZER //let's go beep
+#define BUZZPIN 16 //board pin 
 
 
 

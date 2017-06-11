@@ -41,7 +41,7 @@ void getConfig() { //load default config values from EEPROM
 #endif
 
 }
-
+#if defined(CONFIGOPT)
 void setDefaultConfig() {
 
   for (int i = 0 ; i < EEPROM.length() ; i++) { //clear the EEPROM
@@ -52,6 +52,8 @@ void setDefaultConfig() {
 
 
 }
+
+#endif
 
 void getDefaultConfig() {
   conf.qnePressure = 101325; //QNH value to calculate vario Altitude
@@ -196,7 +198,7 @@ String getStringFromBool(bool bval) { //TODO: process Boolean values
     return "Off";
   }
 }
-
+#if defined(CONFIGOPT)
 void getConfigFromEEPROM() {
   EEPROM.get(eeAddress, conf);
 
@@ -206,6 +208,7 @@ void saveConfigToEEPROM() {
   EEPROM.put(eeAddress, conf);
 
 }
+#endif 
 
 bool getBoolFromVal(char *sval) { //TODO: process Boolean values
   if (atoi(sval) == 1) {

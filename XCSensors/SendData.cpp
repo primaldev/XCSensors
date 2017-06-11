@@ -111,35 +111,37 @@ int getSize(char* ch) {
 
 
 void sendData(char *message) {
+char newl[2] = "\n";
+  
 #if defined(SERIALOUT)
-  if (conf.SerialMain) {
+  
     SERIALOUT.print(message);
-    SERIALOUT.print("\n");
-  }
+    SERIALOUT.print(newl);
+  
 #endif
 
 #if defined(SERIALOUTBT)
   if (conf.SerialMain) {
     SERIALOUTBT.print(message);
-    SERIALOUTBT.print("\n");
+    SERIALOUTBT.print(newl);
   }
 #endif
 
 #if defined(SERIALOUTUSB)
     SERIALOUTUSB.print(message);
-    SERIALOUTUSB.print("\n"); 
+    SERIALOUTUSB.print(newl); 
 #endif
 
 #if defined(SERIALESP)
 #if defined(ESPAT)
 
     SERIALESP.print(message); 
-    SERIALESP.print("\n"); 
+    SERIALESP.print(newl); 
   
 #else
 
   SERIALESP.print(message);
-  SERIALESP.print("\n");
+  SERIALESP.print(newl);
 
 
 #endif
