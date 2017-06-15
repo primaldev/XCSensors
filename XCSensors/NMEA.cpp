@@ -1,6 +1,6 @@
 /*
   XCSensors http://XCSensors.org
-  
+
   Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ void NMEA::setGforce(float gforce) { //$FBG does not exist, unable to find a gfo
 
   char t_NmeaAgforce[15] = "$XCSG,";
   char t_gforce[5];
- // char t_tail[2] = ",";
+  // char t_tail[2] = ",";
 
   dtostrf(gforce, 2, 2, t_gforce);
   strcat(t_NmeaAgforce, t_gforce );
@@ -45,7 +45,7 @@ void NMEA::setGforce(float gforce) { //$FBG does not exist, unable to find a gfo
 }
 
 
-void NMEA::setPTAS1(float cv, float av, long altitudeF) {
+void NMEA::setPTAS1(double vario, double varioAv, double realAltitude) {
   //$PTAS1,xxx,yyy,zzzzz,aaa*CS<CR><LF>
   char t_nmeaPTAS1[44] = "$PTAS1,";
   char t_av[7];
@@ -53,6 +53,17 @@ void NMEA::setPTAS1(float cv, float av, long altitudeF) {
   char t_altitudeF[10];
   char t_tail[2] = ","; //including tas
   char t_comma[2] = ",";
+
+  //Convert to feet
+  float cv = vario * 1.943 * 10 + 200;
+  float av = 0;
+
+  long altitudeF = realAltitude * 3.28 + 2000;
+
+#if defined(PTASAVERAGE)
+  av = varioAv * 1.943 * 10 + 200;
+#endif
+
 
   dtostrf(cv, 3, 2, t_cv);
   strcat(t_nmeaPTAS1, t_cv);
@@ -94,7 +105,7 @@ void NMEA::setnmeaVarioLXWP0(double varioAlt, float a, float b, float c, float d
   char t_nmeaVarioLXWP0[60] = "$LXWP0,N,,";
   char t_vario[5];
   char t_alt[9];
-  
+
   char t_tail[3] = ",,";
   char t_comma[2] = ",";
 
@@ -145,24 +156,24 @@ void NMEA::setNmeaVarioSentence(long rawPressure, double varioAlt, float climbRa
   //char t_tail[2] = ",";
   char t_comma[2] = ",";
 
-  dtostrf(rawPressure, 6, 0, t_pressure);
+  dtostrf(rawPressure, 0, 0, t_pressure);
   strcat(t_nmeaVario, t_pressure);
   strcat(t_nmeaVario, t_comma);
 
-  dtostrf(varioAlt, 5, 0, t_alt);
+  dtostrf(varioAlt, 0, 0, t_alt);
   strcat(t_nmeaVario, t_alt);
   strcat(t_nmeaVario, t_comma);
 
 
-  dtostrf(climbRate, 2, 2, t_climbRate);
+  dtostrf(climbRate, 0, 2, t_climbRate);
   strcat(t_nmeaVario, t_climbRate);
   strcat(t_nmeaVario, t_comma);
 
-  dtostrf(temperature, 2, 2, t_temperature);
+  dtostrf(temperature, 0, 2, t_temperature);
   strcat(t_nmeaVario, t_temperature);
   strcat(t_nmeaVario, t_comma);
 
-  dtostrf(voltage, 2, 1, t_voltage);
+  dtostrf(voltage, 0, 1, t_voltage);
   strcat(t_nmeaVario, t_voltage);
 
   //strcat(t_nmeaVario, t_tail);
@@ -183,7 +194,7 @@ void NMEA::setNmeaHumidSentence(int temperatureH11Kelvin, int humidity) {
   char t_nmeaHumid[22] = "$PDVVT,";
   char t_temp[6];
   char t_humidity[3];
-//  char t_tail[2] = ",";
+  //  char t_tail[2] = ",";
   char t_comma[2] = ",";
 
   dtostrf(temperatureH11Kelvin, 4, 0, t_temp);
@@ -194,13 +205,86 @@ void NMEA::setNmeaHumidSentence(int temperatureH11Kelvin, int humidity) {
   strcat(t_nmeaHumid, t_humidity);
 
 
- // strcat(t_nmeaHumid, t_tail);
+  // strcat(t_nmeaHumid, t_tail);
   strcat(t_nmeaHumid, "*");
 
   getCRC(t_nmeaHumid);
 
   strcat(t_nmeaHumid, t_check);
   strcpy(nmeaHumid, t_nmeaHumid);
+
+
+}
+
+//Using the C-probe sentence for LK8000
+void NMEA::setNmeaPcProbeSentence(float aax, float aay, float aaz, int temperature, int humidity, int batVolt) {
+
+  // $PCPROBE,T,Q0,Q1,Q2,Q3,ax,ay,az,temp,rh,batt,delta_press,abs_press,C,
+  // - "T" after "$PCPROBE" indicates that the string contains data. Data are represented as signed,
+  //  16-bit hexadecimal integers. The only exception is abs_press which is in signed 24-bits hex
+  //  format.
+  // - Q0, Q1, Q2, Q3: 3D orientation of the C-Probe in quaternion format. Heading, pitch, and roll can
+  // - temp: temperature in units of 0.1°C.
+  // - rh: relative humidity in units of 0.1%.
+  // - batt: battery level from 0 to 100%.
+  // - delta_press: differential pressure (dynamic - static) in units of 0.1 Pa.
+  // - abs_press: absolute pressure in units of 1/400 Pa
+  // - C: is transmitted only if the C-Probe is being charged. In this case, heat produced by the charging
+  //    process is likely to affect the readings of the temperature and humidity sensors.
+
+  char t_nmeaPcProbe[60] = "$PCPROBE,T,,,,,";
+  //char t_caax[5];
+  //char t_caay[5];
+  //char t_caaz[5];  
+ // char t_temp[5];  
+//  char t_humidity[5];
+ // char t_Bat[6];
+  //char t_Pressure[7];
+  char t_comma[2] = ",";
+
+  //convert to sentence specs
+  int caax = aax * 1000;
+  int caay = aay * 1000;
+  int caaz = aaz * 1000;
+
+  int cTemp = temperature * 10;
+  int cRh = humidity * 10;
+
+  int cBat = batVolt * 1000;
+ 
+
+  const char *t_caax = (String(caax,HEX)).c_str(); 
+  strcat(t_nmeaPcProbe, t_caax);
+  strcat(t_nmeaPcProbe, t_comma);
+  
+  const char *t_caay = (String(caay,HEX)).c_str();  
+  strcat(t_nmeaPcProbe, t_caay);
+  strcat(t_nmeaPcProbe, t_comma);
+  
+  const char *t_caaz = (String(caaz,HEX)).c_str();  
+  strcat(t_nmeaPcProbe, t_caaz);
+  strcat(t_nmeaPcProbe, t_comma);
+
+  const char *t_temp = (String(cTemp,HEX)).c_str();
+  strcat(t_nmeaPcProbe, t_temp);
+  strcat(t_nmeaPcProbe, t_comma);
+
+  const char *t_humidity = (String(cRh,HEX)).c_str();
+  strcat(t_nmeaPcProbe, t_humidity);
+  strcat(t_nmeaPcProbe, t_comma);
+
+  const char *t_Bat = (String(cBat,HEX)).c_str();
+  strcat(t_nmeaPcProbe, t_Bat);
+  strcat(t_nmeaPcProbe, t_comma);
+
+  strcat(t_nmeaPcProbe, t_comma); //delta pressure
+  strcat(t_nmeaPcProbe, t_comma); //abs prssure
+  strcat(t_nmeaPcProbe, t_comma);
+  strcat(t_nmeaPcProbe, "*");
+
+  getCRC(t_nmeaPcProbe);
+  strcat(t_nmeaPcProbe, t_check);
+  strcpy(nmeaPcProbe, t_nmeaPcProbe);
 
 
 }

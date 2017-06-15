@@ -21,40 +21,50 @@ void getConfigVars() ;
 void getDefaultConfig();
 void getConfVal(char c);
 
-const int C_SerialMain=1;
+const int C_SerialOut=1;
+const int C_SerialOutBT=2;
+const int C_SerialOutESP=3;
+const int C_SerialOutUSB=4;
 const int C_qnePressure=5;
 const int C_varioDeadBand=6;
 const int C_ptas1=7;
 const int C_lxnav=8;
-const int C_variosmooth=9;
-const int C_buzzer=10;
-const int C_varioAudioDeadBand=11;
-const int C_varioAudioSinkDeadBand=12;
-const int C_advTriggerTime=13;
-const int C_advRelaxTime=14;
-const int C_advMinSmooth=15;
-const int C_advMaxSmooth=16;
+const int C_pcprobe=9;
+const int C_xcs=10;
+const int C_variosmooth=11;
+const int C_buzzer=12;
+const int C_varioAudioDeadBand=13;
+const int C_varioAudioSinkDeadBand=14;
+const int C_advTriggerTime=15;
+const int C_advRelaxTime=16;
+const int C_advMinSmooth=17;
+const int C_advMaxSmooth=18;
 
 
 typedef struct {
-  bool hasSavedtoEEPROM;
+  byte hasSavedtoEEPROM;
   double qnePressure;
   int varioDeadBand;
-  int magOrientation;
-  int magDeclination;
-  bool SerialMain;
-  bool ptas1;
-  bool lxnav;
+  byte SerialOut; 
+  byte SerialOutBT; 
+  byte SerialOutESP; 
+  byte SerialOutUSB;
+  byte ptas1;
+  byte lxnav;
+  byte pcprobe; //
+  byte xcs; //
   byte variosmooth;
-  bool buzzer;
+  byte buzzer;
   int varioAudioDeadBand;
   int varioAudioSinkDeadBand;
   int advTriggerTime;
   int advRelaxTime;
   byte advMinSmooth;
   byte advMaxSmooth;
-   
+ 
 } conf_t;
+
+
 
 extern conf_t conf;
 

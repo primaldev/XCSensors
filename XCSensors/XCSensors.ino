@@ -14,16 +14,25 @@
 #include <Arduino.h>
 #include "XCSensors.h"
 #include <TimedAction.h>
-#include <Wire.h> //For STM32 copy lib from http://www.stm32duino.com/viewtopic.php?t=6 to the stm32 harware lib folder (also correct the .\ error)
+#include <Wire.h> //1*
+#include <SimpleDHT.h> //2*
+#include <MPU6050.h> //3*
 #include "config.h"
 #include "MS5611.h"
-#include <SimpleDHT.h>
-#include <MPU6050.h>
 #include "Conf.h"
 #include "SubFunctions.h"
 #include "Average.h"
 #include "SendData.h"
 #include "Audio.h"
+
+/*
+ * * IDE Notes
+ * 1) For STM32 copy lib from http://www.stm32duino.com/viewtopic.php?t=6 to 
+ *    the stm32 harware lib folder (also correct the .\ error)
+ * 2) https://github.com/winlinvip/SimpleDHT/releases
+ * 3) https://github.com/jrowberg/i2cdevlib
+ * 
+ */
 
 
 //----------------------------------------------------------------------------//
@@ -38,7 +47,7 @@ conf_t conf;
 bool runloop = true;
 bool startwait = false;
 bool takeoff = false;
-int32_t realPressureAv = 1; //usable stabalized reading
+int32_t realPressureAv = 1; //x100 usable stabalized reading (This is used to calculate vario)
 int32_t rawPressurePrev = 0; //previous direct reading
 int32_t rawPressurePrev2 = 0;
 double previousAltitude;
@@ -57,10 +66,6 @@ bool hasrun = false;
 #if defined(DHT)
 byte dhttemperature = 0;
 byte dhthumidity = 0;
-#endif
-
-#if defined(BUZZER)
-byte trun = 0;
 #endif
 //----------------------------------------------------------------------------//
 // Class Loaders
@@ -114,7 +119,7 @@ void ledOff() {
    Sensor readings are processed at different timed actions
    this function collects that data.
 */
-void collectNmea10() {
+void collectNmea10() { //runs every 100ms
 #if defined(VARIO)
 
   double realAltitude = baro.getAltitude( realPressureAv, conf.qnePressure); //Based on QN
@@ -127,20 +132,15 @@ void collectNmea10() {
     vario = 0;
   }
   nmea_varioave.push(vario);
-  // Direct call to send ptas1
-  if (conf.ptas1) { //zero deadband
-    float cv = vario * 1.943 * 10 + 200;
-    float av = 0;
 
-    long altitudeF = realAltitude * 3.28 + 2000;
-
-#if defined(PTASAVERAGE)
-    av = varioAv * 1.943 * 10 + 200;
-#endif
-
-    nmea.setPTAS1(cv, av, altitudeF);
+  
+  // Direct call to send ptas1, without deadband
+  if (conf.ptas1) {     
+    nmea.setPTAS1(vario, varioAv, realAltitude);  
     sendPTAS1();
-  }
+  }   
+
+  
 
   checkAdaptiveVario(vario);
 
@@ -160,7 +160,7 @@ void collectNmea10() {
 
 
 #if defined(ALLFASTDATA)
-
+  getSlowSensorData();
   sendNmeaAll();
 #else
 #if !defined(GPSTIMER)
@@ -168,7 +168,7 @@ void collectNmea10() {
   gi++;
   if (gi > 5) { // 6 samples collected
     ledOn();
-    getSensorData();
+    getSlowSensorData();
     sendNmeaAll();
     gi = 0;
     ledOff();
@@ -176,6 +176,9 @@ void collectNmea10() {
 #endif
 
 #endif
+
+
+
 }
 
 void readACCLSensor() {
@@ -232,16 +235,17 @@ void GPSSERIALEVENT() { //Builtin Arduino Function
 }
 #endif
 
+
 /*
    Sends vario data and collects other sensor data
    before calling sendNmeaAll.
 */
 
-void getSensorData() {
+void getSlowSensorData() { //Sensor data not needed every 100ms
 #if defined(VARIO)
   varioAv = nmea_varioave.mean();
   if (conf.lxnav) {
-    nmea.setnmeaVarioLXWP0(previousAltitude, nmea_varioave.get(0), nmea_varioave.get(2), nmea_varioave.get(4), nmea_varioave.get(6), nmea_varioave.get(8), nmea_varioave.get(9)); //need to gather 6 samples
+    nmea.setnmeaVarioLXWP0(previousAltitude, nmea_varioave.get(0), nmea_varioave.get(2), nmea_varioave.get(4), nmea_varioave.get(6), nmea_varioave.get(8), nmea_varioave.get(9));
     //  float volt = vRef.readVcc();
     nmea.setNmeaVarioSentence(realPressureAv, previousAltitude, varioAv, baro.getTemperature(), 0 / 1000);
   }
@@ -256,6 +260,12 @@ void getSensorData() {
   dhthumidity += DHTOFFSET;
 #endif
 
+#if defined(ACCL) && defined(DHT) // kind of a requirement
+ //Send C-probe data
+ 
+   nmea.setNmeaPcProbeSentence(float((aax * 1000) / 2048)/1000 , float((aay * 1000) / 2048)/1000, float((aaz * 1000) / 2048)/1000, dhttemperature, dhthumidity, 0);  
+   sendPcProbe();
+#endif
 
 }
 
@@ -308,6 +318,13 @@ void readVarioPressure() {
 
 #endif
 
+//also fire the buzzer
+#if defined(BUZZER)
+    if (takeoff) { 
+        makeVarioAudio(vario);
+     }
+#endif
+
 }
 
 void runOnce() {
@@ -316,7 +333,7 @@ void runOnce() {
     resetACCLcompVal();
 #endif
 #if defined(BTSLEEP)
-    if (runloop && !conf.SerialMain) {
+    if (runloop && !conf.SerialOutBT) {
       digitalWrite(BTENPIN, LOW); //Make BT go ZZ
     }
 #endif
@@ -334,7 +351,7 @@ void setup() {
 #if defined(DEBUG)
   Serial.println("Setup phase");
 #endif
-  pinMode(13, OUTPUT); //LED
+  pinMode(LEDPIN, OUTPUT); //LED
   ledOn();
 #if defined(SERIALOUT_BAUD)
   SERIALOUT.begin(SERIALOUT_BAUD);
@@ -354,10 +371,10 @@ void setup() {
 #if defined(SERIALESP)
 #if defined(WIFIEN_PIN)
   pinMode(WIFIEN_PIN, OUTPUT);
-  if (conf.SerialMain) {
-    digitalWrite(WIFIEN_PIN, LOW);
-  } else {
+  if (conf.SerialOutESP) {
     digitalWrite(WIFIEN_PIN, HIGH);
+  } else {
+    digitalWrite(WIFIEN_PIN, LOW);
   }
 #endif //WIFIEN_PIN
   SERIALESP.begin(SERIALESPBAUD); //need for speed
@@ -398,7 +415,7 @@ void setup() {
 //----------------------------------------------------------------------------//
 
 void loop() {
-
+ // long loopstart = micros(); //for testing
   long startTime = millis();
 
   if ( startTime > STARTDELAY) {    //
@@ -410,10 +427,8 @@ void loop() {
 
   if (!startwait) { //init the tables so it won't shock the system
 #if defined(VARIO)
-    readVarioPressure();
-    //readVario.check();
-    int32_t alt =   baro.getAltitude( realPressureAv, conf.qnePressure);
-    
+    readVarioPressure();   
+    int32_t alt =   baro.getAltitude( realPressureAv, conf.qnePressure);    
     nmea_altitudeave.push(alt);
 #endif
 #if defined(ACCL)
@@ -460,24 +475,16 @@ void loop() {
   takeoff = true;
 #endif
 
-#if defined(BUZZER)
-    trun++;
-
-    if (conf.buzzer && trun > BUZZERCYCLE) {
-     if (takeoff) { 
-        makeVarioAudio(vario);
-     }
-      trun = 0;
-    }
-
-#endif
 
 
   }
 
-
-
-
-
-
+/*
+//Loop timer check (for debuging)
+Serial.println();
+Serial.print("Loop time: ");
+Serial.println(micros() - loopstart);
+Serial.println();
+//On STM32C8 30us on idle, 740us on tx, and sometimes 6000us
+*/
 }

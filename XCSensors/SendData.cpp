@@ -25,6 +25,9 @@ void sendNmeaDHT() {
 
 }
 
+void sendPcProbe() {
+  sendData(nmea.nmeaPcProbe);
+}
 
 void sendAccelerometor() {
 #if defined(ACCL)

@@ -17,7 +17,8 @@ class NMEA {
     void setGforce(float gforce);
     void setNmeaVarioSentence(long rawPressure, double varioAlt, float climbRate, float temperature, float voltage);
     void setNmeaHumidSentence(int temperatureH11, int humidity);
-    void setPTAS1(float cv, float av, long altitudeF);
+    void setPTAS1(double vario, double varioAv, double realAltitude);
+    void setNmeaPcProbeSentence(float aax, float aay, float aaz, int temperature, int humidity, int bat);
     char nmeaGforce[15];
     char nmeaMag[15];
     char nmeaAtt[30];
@@ -25,6 +26,7 @@ class NMEA {
     char nmeaVario[44];
     char nmeaHumid[22];
     char nmeaPTAS1[44];
+    char nmeaPcProbe[60];
   private:
 
     void getCRC(char *buff);

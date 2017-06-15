@@ -21,7 +21,7 @@ void resetACCLcompVal();
 void collectNmea10();
 void readVarioPressure();
 void readACCLSensor();
-void getSensorData();
+void getSlowSensorData();
 extern int16_t mx, my, mz;
 extern bool runloop;
 extern NMEA nmea;

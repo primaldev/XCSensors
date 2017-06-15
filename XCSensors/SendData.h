@@ -12,7 +12,7 @@
 
 void sendData(char *message);
 void sendNmeaAll();
-
+void sendPcProbe();
 void sendPTAS1();
 
 void sendAccelerometor();

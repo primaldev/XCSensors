@@ -15,26 +15,25 @@
 ////////////////////////////
 
 //There can be only one
+//Don't forget to change Arduino Settings when changing boards
 
+//#define STM32F1
 
-//#define TEENSY                  //Don't forget to change Arduino Settings
-#define STM32F103R
-
-
+#define TEENSY
 /////////////////////////////
 // Config Type
 ////////////////////////////
 //Switch between different configurations
 
-#define WIFIBOX_BT //Wifi box configuration
-//#define KOBO_BT //Kobo intergrated with extra Bluetooth module
+//#define WIFIBOX_BT //Wifi box configuration
+#define KOBO_BT //Kobo intergrated with extra Bluetooth module
 
 ///////////////////////////
 // Developer Options
 ///////////////////////////
 
-#define DEBUG
-#define EEPROMDEVMODE //For developement. will reset the eeprom on every startup
+//#define DEBUG
+//#define EEPROMDEVMODE //For developement. will reset the eeprom on every startup
 
 ///////////////////////////
 // General Options
@@ -56,14 +55,14 @@
 
 #define VARIO2LEASTDEV //base dual vario on least deviation
 #define PTASAVERAGE //include vario avarage in ptas sentence (ignored by XCSoar)
-#define VARIOREADMS 50//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea6
+#define VARIOREADMS 20//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea10
 #define SOARDETECTION 30000 // if climbrate is constant for set milliseconds at 0 m/s the buzzer is muted
 /*
    Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
    It does it by detecting "triggers".
 */
 #define ADAPTIVEVARIO //Adapts the vario low pass filter 
-#define ADVLOWTRIGGER 0.2 //0.8 // level at witch low trigger are checked
+#define ADVLOWTRIGGER 0.1 //0.2 // level at witch low trigger are checked
 
 #define ACCLREADMS 100 //how often to read the accelerom
 #define ACCLSMOOTH 10 //Lowpass filter level
@@ -87,7 +86,7 @@
 // MCU Board STM32F103
 /////////////////////////////
 
-#if defined(STM32F103R)
+#if defined(STM32F1)
 
 /////////////////////////////////////////////////////////////////////
 //STM32F103R Kobo Integrated
@@ -251,8 +250,8 @@
 #define SERIALOUT Serial1 //Serial1=kobo
 #define SERIALOUT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
 
-//#define SERIALOUTBT Serial3 //Bluetooth without AT commands Serial out
-//#define SERIALOUTBT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
+#define SERIALOUTBT Serial3 //Bluetooth without AT commands Serial out
+#define SERIALOUTBT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
 
 //#define SERIALUSB Serial //USB output
 
@@ -271,7 +270,7 @@
 //#define SERIALESP Serial3
 //#define ESPAT  //use AT commands
 //#define SERIALESPBAUD 115200 
-#define WIFIEN_PIN 12 //wifi enable pin 
+///#define WIFIEN_PIN 12 //wifi enable pin 
 
 //#define WIFISSID "XCSensors01" // change this
 //#define WIFIPASSWORD "thereisnospoon"

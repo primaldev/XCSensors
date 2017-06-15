@@ -1,6 +1,6 @@
 /*
   XCSensors http://XCSensors.org
-  
+
   Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
@@ -56,19 +56,60 @@ void setDefaultConfig() {
 #endif
 
 void getDefaultConfig() {
-  conf.qnePressure = 101325; //QNH value to calculate vario Altitude
-  conf.varioDeadBand = 100; // X 1000 levels lower than this = 0. (ignored by ptas1)
-  conf.SerialMain = false; //only send data to the one serial. reset needed to start WIFI
-  conf.ptas1 = true; // send ptas1 nmea, uses the gps channel (once every 100ms)
-  conf.lxnav = false; //send vario lxnav sentence
-  conf.variosmooth = 15; //low pass filter, the higher the number the slower the raw vario reading changes.
-  conf.buzzer = true; // turn vario audio on or off
-  conf.varioAudioDeadBand = 100; //X 1000
-  conf.varioAudioSinkDeadBand = 3000;  //X 1000 and absolute value
-  conf.advTriggerTime = 1000; // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
-  conf.advRelaxTime = 20000; // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
-  conf.advMinSmooth = 6; // lowest level for conf.variosmooth
-  conf.advMaxSmooth = 28; // highest level for conf.variosmooth
+  //QNH value to calculate vario Altitude
+  conf.qnePressure = 101325; 
+  
+  // X 1000 levels lower than this = 0. (ignored by ptas1)
+  conf.varioDeadBand = 100; 
+  
+  //send data via serial port
+  conf.SerialOut = true; 
+  
+  //send data via bluetooth. BT uses alot of power if not linked. Better to disable if not used. 
+  //BT will be available during startup, if the config menu is used, it will not be disabled.
+  conf.SerialOutBT = false;
+
+   //send data via attached ESP
+  conf.SerialOutESP = false; 
+
+  // send data via USB for OTG
+  conf.SerialOutUSB = true; 
+
+  // send ptas1 nmea, uses the gps channel (once every 100ms)
+  conf.ptas1 = true; 
+
+  //send vario lxnav sentence
+  conf.lxnav = false; 
+
+  //use the c-probe nmea sentence
+  conf.pcprobe = true; 
+
+  //use custom nmea sentence
+  conf.xcs = false; 
+
+  //low pass filter, the higher the number the slower the raw vario reading changes.
+  conf.variosmooth = 15;
+
+  // turn vario audio on or off
+  conf.buzzer = true; 
+
+  //X 1000
+  conf.varioAudioDeadBand = 100;
+
+   //X 1000 and absolute value
+  conf.varioAudioSinkDeadBand = 3000; 
+
+  // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
+  conf.advTriggerTime = 1000; 
+  
+  // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
+  conf.advRelaxTime = 20000; 
+
+  // lowest level for conf.variosmooth
+  conf.advMinSmooth = 8;
+
+   // highest level for conf.variosmooth
+  conf.advMaxSmooth = 30; 
 }
 
 #if defined (SERIAL_CONFIG)
@@ -78,19 +119,24 @@ void getDefaultConfig() {
 void printaf(int n) {
   switch (n) {
 
-    case C_SerialMain: SERIAL_CONFIG.print(F("1) Serial Only, Wifi or BT Disable: ")); break;
-    case C_qnePressure: SERIAL_CONFIG.print(F("11) QNE Pressure: ")); break;
-    case C_varioDeadBand: SERIAL_CONFIG.print(F("12) Vario deadband (x1000): ")); break;
-    case C_ptas1: SERIAL_CONFIG.print(F("14) Send PTAS: ")); break;
-    case C_lxnav: SERIAL_CONFIG.print(F("16) Send LXNAV: ")); break;
-    case C_variosmooth: SERIAL_CONFIG.print(F("18) Vario smoothness level: ")); break;
-    case C_buzzer: SERIAL_CONFIG.print(F("20) Enable Vario Audio: ")); break;
-    case C_varioAudioDeadBand: SERIAL_CONFIG.print(F("21) Vario Audio asc deadband x1000: ")); break;
-    case C_varioAudioSinkDeadBand: SERIAL_CONFIG.print(F("22) Vario audio sink deadband x1000: ")); break;
-    case C_advTriggerTime: SERIAL_CONFIG.print(F("24) Adaptive vario trigger time: ")); break;
-    case C_advRelaxTime: SERIAL_CONFIG.print(F("25) Adaptive vario relax time: ")); break;
-    case C_advMinSmooth: SERIAL_CONFIG.print(F("26) Adaptive vario minimum smooth level: ")); break;
-    case C_advMaxSmooth: SERIAL_CONFIG.print(F("27) Adaptive vario maximum smooth level: ")); break;
+    case C_SerialOut: SERIAL_CONFIG.print(C_SerialOut); SERIAL_CONFIG.print(F(") Enable serial port: "));  break;
+    case C_SerialOutBT: SERIAL_CONFIG.print(C_SerialOutBT); SERIAL_CONFIG.print(F(") Enable bluetooth: ")); break;
+    case C_SerialOutESP: SERIAL_CONFIG.print(C_SerialOutESP); SERIAL_CONFIG.print(F(") Enable Wifi: ")); break;
+    case C_SerialOutUSB: SERIAL_CONFIG.print(C_SerialOutUSB); SERIAL_CONFIG.print(F(") Enable serial USB OTG: ")); break;
+    case C_qnePressure: SERIAL_CONFIG.print(C_qnePressure); SERIAL_CONFIG.print(F(") QNE Pressure: ")); break;
+    case C_varioDeadBand: SERIAL_CONFIG.print(C_varioDeadBand); SERIAL_CONFIG.print(F(") Vario deadband (x1000): ")); break;
+    case C_ptas1: SERIAL_CONFIG.print(C_ptas1); SERIAL_CONFIG.print(F(") Send PTAS: ")); break;
+    case C_lxnav: SERIAL_CONFIG.print(C_lxnav); SERIAL_CONFIG.print(F(") Send LXNAV: ")); break;
+    case C_pcprobe: SERIAL_CONFIG.print(C_pcprobe); SERIAL_CONFIG.print(F(") Send PCPROBE: ")); break;
+    case C_xcs: SERIAL_CONFIG.print(C_xcs); SERIAL_CONFIG.print(F(") Send XCS: ")); break;
+    case C_variosmooth: SERIAL_CONFIG.print(C_variosmooth); SERIAL_CONFIG.print(F(") Vario smoothness level: ")); break;
+    case C_buzzer: SERIAL_CONFIG.print(C_buzzer); SERIAL_CONFIG.print(F(") Enable Vario Audio: ")); break;
+    case C_varioAudioDeadBand: SERIAL_CONFIG.print(C_varioAudioDeadBand); SERIAL_CONFIG.print(F(") Vario Audio asc deadband x1000: ")); break;
+    case C_varioAudioSinkDeadBand: SERIAL_CONFIG.print(C_varioAudioSinkDeadBand); SERIAL_CONFIG.print(F(") Vario audio sink deadband x1000: ")); break;
+    case C_advTriggerTime: SERIAL_CONFIG.print(C_advTriggerTime); SERIAL_CONFIG.print(F(") Adaptive vario trigger time: ")); break;
+    case C_advRelaxTime: SERIAL_CONFIG.print(C_advRelaxTime); SERIAL_CONFIG.print(F(") Adaptive vario relax time: ")); break;
+    case C_advMinSmooth: SERIAL_CONFIG.print(C_advMinSmooth); SERIAL_CONFIG.print(F(") Adaptive vario minimum smooth level: ")); break;
+    case C_advMaxSmooth: SERIAL_CONFIG.print(C_advMaxSmooth); SERIAL_CONFIG.print(F(") Adaptive vario maximum smooth level: ")); break;
 
   }
 
@@ -109,7 +155,7 @@ void printhd() {
   SERIAL_CONFIG.println(F("0 - Default values"));
   SERIAL_CONFIG.println(F("101 - This menu"));
   SERIAL_CONFIG.println(F("100 - Save to EEPROM"));
-  SERIAL_CONFIG.println(F("106 - Calibrate Accelerometer"));
+  SERIAL_CONFIG.println(F("106 - Reset Accelerometer Calibration"));
   SERIAL_CONFIG.println(F("Use 1 for on and 0 for off"));
   SERIAL_CONFIG.println();
   SERIAL_CONFIG.println(F("XCSensors Configuration:"));
@@ -139,52 +185,73 @@ void getConfigVars() { // order is not that important
 
 #if defined (SERIAL_CONFIG)
   printhd();
-  printaf(1);
-  SERIAL_CONFIG.print( getStringFromBool(conf.SerialMain)); 
+#if defined(SERIALOUT)
+  printaf(C_SerialOut);
+  SERIAL_CONFIG.print( getStringFromBool(conf.SerialOut));
+  printtf();   
+#endif
+#if defined(SERIALOUTBT)
+  printaf(C_SerialOutBT);
+  SERIAL_CONFIG.print( getStringFromBool(conf.SerialOutBT));
   printtf();
-  printaf(11);
+#endif
+#if defined(SERIALESP)
+  printaf(C_SerialOutESP);
+  SERIAL_CONFIG.print( getStringFromBool(conf.SerialOutESP));
+  printtf();
+#endif
+#if defined(SERIALOUTUSB)
+  printaf(C_SerialOutUSB);
+  SERIAL_CONFIG.print( getStringFromBool(conf.SerialOutUSB));
+  printtf();
+#endif
+  printaf(C_qnePressure);
   SERIAL_CONFIG.print(String(conf.qnePressure));
   printtf();
-  printaf(12);
+  printaf(C_varioDeadBand);
   SERIAL_CONFIG.print(conf.varioDeadBand);
   printtf();
-  printaf(14);
+  printaf(C_ptas1);
   SERIAL_CONFIG.print(conf.ptas1);
   printtf();
-  printaf(16);
+  printaf(C_lxnav);
   SERIAL_CONFIG.print(conf.lxnav);
   printtf();
-  printaf(17);
+  printaf(C_pcprobe);
+  SERIAL_CONFIG.print(conf.pcprobe);
+  printtf();
+  printaf(C_xcs);
+  SERIAL_CONFIG.print(conf.xcs);
+  printtf();
+  printaf(C_variosmooth);
   SERIAL_CONFIG.print(conf.variosmooth);
   printtf();
-  printaf(20);
+  printaf(C_buzzer);
   SERIAL_CONFIG.print(conf.buzzer);
   printtf();
-  printaf(21);
+  printaf(C_varioAudioDeadBand);
   SERIAL_CONFIG.print(conf.varioAudioDeadBand);
   printtf();
-  printaf(22);
+  printaf(C_varioAudioSinkDeadBand);
   SERIAL_CONFIG.print(conf.varioAudioSinkDeadBand);
   printtf();
-  printaf(24);
+  printaf(C_advTriggerTime);
   SERIAL_CONFIG.print(conf.advTriggerTime);
   printtf();
-  printaf(25);
+  printaf(C_advRelaxTime);
   SERIAL_CONFIG.print( conf.advRelaxTime);
   printtf();
-  printaf(26);
+  printaf(C_advMinSmooth);
   SERIAL_CONFIG.print( conf.advMinSmooth);
   printtf();
-  printaf(27);
+  printaf(C_advMaxSmooth);
   SERIAL_CONFIG.print(conf.advMaxSmooth);
   printtf();
-#if defined(WIFIEN_PIN)
-  if (conf.SerialMain) {
-    digitalWrite(WIFIEN_PIN, LOW);
-  } else {
-    digitalWrite(WIFIEN_PIN, HIGH);
-  }
+
+#if defined(EEPROMDEVMODE)
+  SERIAL_CONFIG.println(F("DEV MODE, DEFAULT WILL BE LOADED AT STARTUP!! "));
 #endif
+
 #endif
   //#if defined(LCDMENU) //here be LCD
   //
@@ -208,7 +275,7 @@ void saveConfigToEEPROM() {
   EEPROM.put(eeAddress, conf);
 
 }
-#endif 
+#endif
 
 bool getBoolFromVal(char *sval) { //TODO: process Boolean values
   if (atoi(sval) == 1) {
@@ -219,14 +286,19 @@ bool getBoolFromVal(char *sval) { //TODO: process Boolean values
 }
 
 void setConf(int varname, char *value) {
-    
+
   switch (varname) {
     case 0: setDefaultConfig(); break;//load defaults
-    case C_SerialMain: conf.SerialMain = getBoolFromVal(value); break;
-    case C_qnePressure: conf.qnePressure = atoi(value); break; 
+    case C_SerialOut: conf.SerialOut = getBoolFromVal(value); break;
+    case C_SerialOutBT: conf.SerialOutBT = getBoolFromVal(value); break;
+    case C_SerialOutESP: conf.SerialOutESP = getBoolFromVal(value); break;
+    case C_SerialOutUSB: conf.SerialOutUSB = getBoolFromVal(value); break;
+    case C_qnePressure: conf.qnePressure = atoi(value); break;
     case C_varioDeadBand: conf.varioDeadBand = atoi(value); break;
     case C_ptas1: conf.ptas1 = getBoolFromVal(value); break;
     case C_lxnav: conf.lxnav = getBoolFromVal(value); break;
+    case C_pcprobe: conf.pcprobe = getBoolFromVal(value); break;
+    case C_xcs: conf.xcs = getBoolFromVal(value); break;
     case C_variosmooth: conf.variosmooth = atoi(value); break;
     case C_buzzer: conf.buzzer = getBoolFromVal(value); break;
     case C_varioAudioDeadBand: conf.varioAudioDeadBand = atoi(value); break;
@@ -241,11 +313,7 @@ void setConf(int varname, char *value) {
     case 200: runloop = false; break; //stop
     case 201:
       runloop = true;
-#if defined(BTSLEEP)
-      if (!conf.SerialMain) {
-        digitalWrite(BTENPIN, LOW); //Make BT go ZZ
-      }
-#endif
+
       break; //start
     default:
 
@@ -253,6 +321,8 @@ void setConf(int varname, char *value) {
       break;
   }
   getConfigVars();
+
+
 }
 
 
@@ -303,6 +373,7 @@ void getConfVal(char c) {
     flag = false;
     split = false;
     setConf(atoi(Confbuffer), Valbuffer);
+    saveConfigToEEPROM();
     memset(Confbuffer, 0, sizeof(Confbuffer));
     memset(Valbuffer, 0, sizeof(Valbuffer));
 
