@@ -16,15 +16,13 @@
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
 #include "SubFunctions.h"
-
+#include "I2cEeprom.h"
 
 bool cmd = false;
 float f = 0.00f;
 int eeAddress = 0;
 
 void getConfig() { //load default config values from EEPROM
-
-
 
   getConfigFromEEPROM();
   if (!conf.hasSavedtoEEPROM) {
@@ -41,15 +39,20 @@ void getConfig() { //load default config values from EEPROM
 #endif
 
 }
-#if defined(CONFIGOPT)
-void setDefaultConfig() {
 
+#if defined(CONFIGOPT)
+
+void setDefaultConfig() {
+#if defined(I2CEEPROM)
+  writeSizeValue(0, 0);
+#else
   for (int i = 0 ; i < EEPROM.length() ; i++) { //clear the EEPROM
     EEPROM.write(i, 0);
   }
+
+#endif
   getDefaultConfig();
   saveConfigToEEPROM();
-
 
 }
 
@@ -57,59 +60,59 @@ void setDefaultConfig() {
 
 void getDefaultConfig() {
   //QNH value to calculate vario Altitude
-  conf.qnePressure = 101325; 
-  
+  conf.qnePressure = 101325;
+
   // X 1000 levels lower than this = 0. (ignored by ptas1)
-  conf.varioDeadBand = 100; 
-  
+  conf.varioDeadBand = 100;
+
   //send data via serial port
-  conf.SerialOut = true; 
-  
-  //send data via bluetooth. BT uses alot of power if not linked. Better to disable if not used. 
+  conf.SerialOut = true;
+
+  //send data via bluetooth. BT uses alot of power if not linked. Better to disable if not used.
   //BT will be available during startup, if the config menu is used, it will not be disabled.
   conf.SerialOutBT = false;
 
-   //send data via attached ESP
-  conf.SerialOutESP = false; 
+  //send data via attached ESP
+  conf.SerialOutESP = false;
 
   // send data via USB for OTG
-  conf.SerialOutUSB = true; 
+  conf.SerialOutUSB = false;
 
   // send ptas1 nmea, uses the gps channel (once every 100ms)
-  conf.ptas1 = true; 
+  conf.ptas1 = true;
 
   //send vario lxnav sentence
-  conf.lxnav = false; 
+  conf.lxnav = false;
 
   //use the c-probe nmea sentence
-  conf.pcprobe = true; 
+  conf.pcprobe = true;
 
   //use custom nmea sentence
-  conf.xcs = false; 
+  conf.xcs = false;
 
   //low pass filter, the higher the number the slower the raw vario reading changes.
   conf.variosmooth = 15;
 
   // turn vario audio on or off
-  conf.buzzer = true; 
+  conf.buzzer = true;
 
   //X 1000
   conf.varioAudioDeadBand = 100;
 
-   //X 1000 and absolute value
-  conf.varioAudioSinkDeadBand = 3000; 
+  //X 1000 and absolute value
+  conf.varioAudioSinkDeadBand = 3000;
 
   // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
-  conf.advTriggerTime = 1000; 
-  
+  conf.advTriggerTime = 1000;
+
   // if no trigger occurs in this time frame, conf.variosmooth is reduced by 1,
-  conf.advRelaxTime = 20000; 
+  conf.advRelaxTime = 20000;
 
   // lowest level for conf.variosmooth
   conf.advMinSmooth = 8;
 
-   // highest level for conf.variosmooth
-  conf.advMaxSmooth = 30; 
+  // highest level for conf.variosmooth
+  conf.advMaxSmooth = 30;
 }
 
 #if defined (SERIAL_CONFIG)
@@ -152,7 +155,7 @@ void printhd() {
   SERIAL_CONFIG.println(F("XCSensors Config options:"));
   SERIAL_CONFIG.println(F("200 - Stop Feed"));
   SERIAL_CONFIG.println(F("201 - Start Feed"));
-  SERIAL_CONFIG.println(F("0 - Default values"));
+  SERIAL_CONFIG.println(F("1000 - Default values"));
   SERIAL_CONFIG.println(F("101 - This menu"));
   SERIAL_CONFIG.println(F("100 - Save to EEPROM"));
   SERIAL_CONFIG.println(F("106 - Reset Accelerometer Calibration"));
@@ -188,7 +191,7 @@ void getConfigVars() { // order is not that important
 #if defined(SERIALOUT)
   printaf(C_SerialOut);
   SERIAL_CONFIG.print( getStringFromBool(conf.SerialOut));
-  printtf();   
+  printtf();
 #endif
 #if defined(SERIALOUTBT)
   printaf(C_SerialOutBT);
@@ -265,7 +268,44 @@ String getStringFromBool(bool bval) { //TODO: process Boolean values
     return "Off";
   }
 }
+
+/*
+   Read and write to the EEPROM
+
+*/
+
 #if defined(CONFIGOPT)
+#if defined(I2CEEPROM)
+
+void getConfigFromEEPROM() {
+  int s = readSizeValue(0) ;
+  if (s > 1 ) {
+    byte PageRead[s];
+    bool readgood = readI2CBin(I2CEEPROM, 4, PageRead, s , I2CEEPROMPAGE);
+
+    if (readgood) {
+      memcpy(&conf, PageRead, s);
+      if (conf.hasSavedtoEEPROM) {
+      }
+    } else {
+      setDefaultConfig();
+    }
+  } else {
+    getDefaultConfig();
+  }
+
+}
+
+void saveConfigToEEPROM() {
+  char b[sizeof(conf)];
+  memcpy(b, &conf, sizeof(conf));
+  writeSizeValue(0, sizeof(conf)); //stores the length of the data
+  writeI2CBin(I2CEEPROM, 4, b, sizeof(b), I2CEEPROMPAGE);
+
+}
+
+#else //use nternal
+
 void getConfigFromEEPROM() {
   EEPROM.get(eeAddress, conf);
 
@@ -276,6 +316,8 @@ void saveConfigToEEPROM() {
 
 }
 #endif
+#endif //Read write EEPROM
+
 
 bool getBoolFromVal(char *sval) { //TODO: process Boolean values
   if (atoi(sval) == 1) {
@@ -288,27 +330,28 @@ bool getBoolFromVal(char *sval) { //TODO: process Boolean values
 void setConf(int varname, char *value) {
 
   switch (varname) {
-    case 0: setDefaultConfig(); break;//load defaults
-    case C_SerialOut: conf.SerialOut = getBoolFromVal(value); break;
-    case C_SerialOutBT: conf.SerialOutBT = getBoolFromVal(value); break;
-    case C_SerialOutESP: conf.SerialOutESP = getBoolFromVal(value); break;
-    case C_SerialOutUSB: conf.SerialOutUSB = getBoolFromVal(value); break;
-    case C_qnePressure: conf.qnePressure = atoi(value); break;
-    case C_varioDeadBand: conf.varioDeadBand = atoi(value); break;
-    case C_ptas1: conf.ptas1 = getBoolFromVal(value); break;
-    case C_lxnav: conf.lxnav = getBoolFromVal(value); break;
-    case C_pcprobe: conf.pcprobe = getBoolFromVal(value); break;
-    case C_xcs: conf.xcs = getBoolFromVal(value); break;
-    case C_variosmooth: conf.variosmooth = atoi(value); break;
-    case C_buzzer: conf.buzzer = getBoolFromVal(value); break;
-    case C_varioAudioDeadBand: conf.varioAudioDeadBand = atoi(value); break;
-    case C_varioAudioSinkDeadBand: conf.varioAudioSinkDeadBand = atoi(value); break;
-    case C_advTriggerTime: conf.advTriggerTime = atoi(value); break;
-    case C_advRelaxTime: conf.advRelaxTime = atoi(value); break;
-    case C_advMinSmooth: conf.advMinSmooth = atoi(value); break;
-    case C_advMaxSmooth: conf.advMaxSmooth = atoi(value); break;
+    case 1000: setDefaultConfig(); break;//load defaults
+    case C_SerialOut: conf.SerialOut = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_SerialOutBT: conf.SerialOutBT = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_SerialOutESP: conf.SerialOutESP = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_SerialOutUSB: conf.SerialOutUSB = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_qnePressure: conf.qnePressure = atoi(value); saveConfigToEEPROM(); break;
+    case C_varioDeadBand: conf.varioDeadBand = atoi(value); saveConfigToEEPROM(); break;
+    case C_ptas1: conf.ptas1 = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_lxnav: conf.lxnav = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_pcprobe: conf.pcprobe = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_xcs: conf.xcs = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_variosmooth: conf.variosmooth = atoi(value); saveConfigToEEPROM(); break;
+    case C_buzzer: conf.buzzer = getBoolFromVal(value); saveConfigToEEPROM(); break;
+    case C_varioAudioDeadBand: conf.varioAudioDeadBand = atoi(value); saveConfigToEEPROM(); break;
+    case C_varioAudioSinkDeadBand: conf.varioAudioSinkDeadBand = atoi(value); saveConfigToEEPROM(); break;
+    case C_advTriggerTime: conf.advTriggerTime = atoi(value); saveConfigToEEPROM(); break;
+    case C_advRelaxTime: conf.advRelaxTime = atoi(value); saveConfigToEEPROM(); break;
+    case C_advMinSmooth: conf.advMinSmooth = atoi(value); saveConfigToEEPROM(); break;
+    case C_advMaxSmooth: conf.advMaxSmooth = atoi(value); saveConfigToEEPROM(); break;
     case 100: saveConfigToEEPROM(); break; //save to eeprom
-    case 106: resetACCLcompVal(); // quick set the ACCL to 0
+    case 102: getConfigFromEEPROM(); break; //load from eeprom
+    case 106: resetACCLcompVal(); break; // quick set the ACCL to 0
     case 101: getConfigVars(); break; // get config for app
     case 200: runloop = false; break; //stop
     case 201:
@@ -317,9 +360,10 @@ void setConf(int varname, char *value) {
       break; //start
     default:
 
-      getConfigVars();
+
       break;
   }
+
   getConfigVars();
 
 
@@ -373,7 +417,6 @@ void getConfVal(char c) {
     flag = false;
     split = false;
     setConf(atoi(Confbuffer), Valbuffer);
-    saveConfigToEEPROM();
     memset(Confbuffer, 0, sizeof(Confbuffer));
     memset(Valbuffer, 0, sizeof(Valbuffer));
 

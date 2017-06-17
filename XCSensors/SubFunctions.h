@@ -12,6 +12,5 @@
 void GPSstuff(char c);
 
 
-
 void checkAdaptiveVario(double vario);
 

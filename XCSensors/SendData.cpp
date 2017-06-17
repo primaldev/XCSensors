@@ -26,7 +26,9 @@ void sendNmeaDHT() {
 }
 
 void sendPcProbe() {
+#if defined(ACCL) && defined(DHT)
   sendData(nmea.nmeaPcProbe);
+#endif
 }
 
 void sendAccelerometor() {
@@ -117,36 +119,35 @@ void sendData(char *message) {
 char newl[2] = "\n";
   
 #if defined(SERIALOUT)
-  
+  if (conf.SerialOut) {
     SERIALOUT.print(message);
     SERIALOUT.print(newl);
-  
+  }
 #endif
 
 #if defined(SERIALOUTBT)
-  //if (!conf.SerialMain) {
+  if (conf.SerialOutBT) {
     SERIALOUTBT.print(message);
     SERIALOUTBT.print(newl);
- // }
+  }
 #endif
 
 #if defined(SERIALOUTUSB)
+  if (conf.SerialOutUSB) {
     SERIALOUTUSB.print(message);
     SERIALOUTUSB.print(newl); 
+  }
 #endif
 
 #if defined(SERIALESP)
-#if defined(ESPAT)
-
+  if (conf.SerialOutESP) {
+#if defined(ESPAT)  
     SERIALESP.print(message); 
-    SERIALESP.print(newl); 
-  
+    SERIALESP.print(newl);   
 #else
-
-  SERIALESP.print(message);
-  SERIALESP.print(newl);
-
-
+    SERIALESP.print(message);
+    SERIALESP.print(newl);
+  }
 #endif
 #endif
 

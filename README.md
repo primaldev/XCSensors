@@ -4,12 +4,11 @@ XCSensors is an Arduino based vario. It provides telemetry data to any vario bas
 ### Features:
 
 Wifi streaming for e-ink readers <br>
-Bluetooth, Serial or USB streaming<br>
+Bluetooth, Serial or USB OTG streaming<br>
 Configuration via Bluetooth, USB or Serial <br>
 Dual pressure sensor support <br>
 Adaptive Vario*
 Humidity sensor <br>
-Gyro compass <br>
 Accelerometer(under development)<br>
 Piezo speaker for vario audio <br>
 Serial GPS (neo6) <br>

@@ -17,12 +17,14 @@
 #include "Conf.h"
 #include "XCSensors.h"
 
+
 #if defined(BUZZER)
 bool climbing = false;
 int tm;
 int stime;
 byte toneOn=false;
 byte muted=false;
+float variof;
 #endif
 
 #if defined(TESTBUZZER)
@@ -98,7 +100,8 @@ void makeVarioAudio(float vario) {
 
 #endif
 
-  int variof = (fabs(vario) * 200 ) + 800;
+  float variofa = (float(fabs(vario)) * 200 ) + 800;
+  variof = (10 * variof + variofa) / 11 ;
 
   if (vario >= double(conf.varioAudioDeadBand) / 1000) {
     pulse = TOPPULSE / (vario * 10) + 100;

@@ -17,22 +17,23 @@
 //There can be only one
 //Don't forget to change Arduino Settings when changing boards
 
-//#define STM32F1
+#define STM32F
+//#define TEENSY
 
-#define TEENSY
 /////////////////////////////
 // Config Type
 ////////////////////////////
 //Switch between different configurations
 
-//#define WIFIBOX_BT //Wifi box configuration
-#define KOBO_BT //Kobo intergrated with extra Bluetooth module
+#define WIFIBOX_BT //Wifi box configuration
+//#define KOBO_BT //Kobo intergrated with extra Bluetooth module
 
 ///////////////////////////
 // Developer Options
 ///////////////////////////
 
-//#define DEBUG
+#define DEBUG
+#define DEBUGSERIAL Serial
 //#define EEPROMDEVMODE //For developement. will reset the eeprom on every startup
 
 ///////////////////////////
@@ -83,17 +84,20 @@
 
 
 /////////////////////////////
-// MCU Board STM32F103
+// MCU Board STM32F
 /////////////////////////////
 
-#if defined(STM32F1)
+#if defined(STM32F)
 
 /////////////////////////////////////////////////////////////////////
 //STM32F103R Kobo Integrated
 /////////////////////////////////////////////////////////////////////
 
 #if defined(KOBO_BT)
-//#define CONFIGOPT //enable configuration option (EEPROM required)
+#define CONFIGOPT //enable configuration option (EEPROM required)
+#define I2CEEPROM 0x50 ////External I2C EEPROM, required if using  CONFIGOPT on STM32F
+#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512k. 64 for 256k
+
 #define LEDPIN PC13
 #define SERIAL_CONFIG Serial3 //the serial port for remote config options
 #define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG is not sharing with a SERIALOUT* type port 
@@ -155,12 +159,16 @@
 #endif
 
 /////////////////////////////////////////////////////////////////////
-//STM32F103R Wifi Box
+//STM32F Wifi Box
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
 
-//#define CONFIGOPT //enable configuration option (EEPROM required)
-#define LEDPIN PC13
+
+#define CONFIGOPT //enable configuration option (EEPROM required)
+#define I2CEEPROM 0x50 ////External I2C EEPROM, required if using CONFIGOPT on STM32F 
+#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
+
+#define LEDPIN PB11 // PC13 - blue pill
 
 #define SERIAL_CONFIG Serial //the serial port for remote config options
 #define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port
@@ -239,6 +247,9 @@
 
 #if defined(KOBO_BT)
 #define CONFIGOPT //enable configuration option (EEPROM required)
+#define I2CEEPROM 0x50 //External I2C EEPROM
+#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
+
 #define LEDPIN 13
 
 #define SERIAL_CONFIG Serial3 //the serial port for remote config options
@@ -307,6 +318,8 @@
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
 #define CONFIGOPT //enable configuration option (EEPROM required)
+#define I2CEEPROM 0x50 //External I2C EEPROM
+#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
 
 #define SERIAL_CONFIG Serial1 //the serial port for remote config options
 //#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port
@@ -391,8 +404,9 @@
 #undef BTSLEEP
 #endif
 
-
-
+#if defined(CONFIGOPT) && defined(STM32F) && !defined(I2CEEPROM)
+#undef CONFIGOPT
+#endif
 
 /////////////////////////////////////////////////////////////////////
 

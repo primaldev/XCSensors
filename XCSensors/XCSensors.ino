@@ -349,7 +349,7 @@ void runOnce() {
 
 void setup() {
 #if defined(DEBUG)
-  Serial.println("Setup phase");
+  DEBUGSERIAL.println("Setup phase");
 #endif
   pinMode(LEDPIN, OUTPUT); //LED
   ledOn();
