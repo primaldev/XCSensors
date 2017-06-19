@@ -133,8 +133,8 @@
 //#define WIFISSID "XCSensors01" // change this
 //#define WIFIPASSWORD "thereisnospoon"
 
-#define DHT
-#define DHT11_PIN 17
+#define DHTH
+#define DHT_PIN 17
 #define DHTOFFSET 50 //calibrate sensor
 
 
@@ -204,8 +204,8 @@
 #define WIFISSID "XCSensors" // change this 
 #define WIFIPASSWORD "thereisnospoon"
 
-#define DHT
-#define DHT11_PIN PB1
+#define DHTH //Curren lib autodetect sensor
+#define DHT_PIN PB1
 #define DHTOFFSET 0 //calibrate sensor
 
 
@@ -286,8 +286,8 @@
 //#define WIFISSID "XCSensors01" // change this
 //#define WIFIPASSWORD "thereisnospoon"
 
-#define DHT
-#define DHT11_PIN 17
+#define DHT(uint8_t pin, uint8_t type, uint8_t count=6);
+#define DHT_PIN 17
 #define DHTOFFSET 50 //calibrate sensor
 
 
@@ -355,8 +355,8 @@
 #define WIFISSID "XCSensors" // change this 
 #define WIFIPASSWORD "thereisnospoon"
 
-#define DHT
-#define DHT11_PIN 17
+#define DHT(uint8_t pin, uint8_t type, uint8_t count=6);
+#define DHT_PIN 17
 #define DHTOFFSET 30 //calibrate sensor
 
 

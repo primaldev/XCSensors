@@ -9,6 +9,7 @@
   any later version. see <http://www.gnu.org/licenses/>
 */
 #include <Arduino.h>
+#include <Wire.h>
 #include "I2cEeprom.h"
 #include "config.h"
 #include "XCSensors.h"
@@ -46,7 +47,7 @@ void i2c_eeprom_read_page( int deviceaddress, unsigned int eeaddress, byte *buff
   }
 }
 
-/*
+/* TODO: Make this readable to normal humans  (or just some proper grammar)
  *  Data to the EEPROM is written sequentially from a starting address. 
  * The length of the written data will be unknown to the program trying to read it.
  * To keep track, 3 bytes plus a check flag stores the lenght of the data.

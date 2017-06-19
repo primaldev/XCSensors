@@ -9,12 +9,7 @@
   any later version. see <http://www.gnu.org/licenses/>
 */
 #include <Arduino.h>
-#include "MS5611.h"
 #include "NMEA.h"
-#include "Average.h"
-#include <MPU6050.h>
-#include <HMC5883L.h>
-#include <SoftwareSerial.h>
 
 
 void resetACCLcompVal();

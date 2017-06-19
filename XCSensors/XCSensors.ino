@@ -15,13 +15,13 @@
 #include "XCSensors.h"
 #include <TimedAction.h>
 #include <Wire.h> //1*
-#include <SimpleDHT.h> //2*
+#include <DHT.h>
 #include <MPU6050.h> //3*
 #include "config.h"
-#include "MS5611.h"
+#include <MS5611.h>
 #include "Conf.h"
 #include "SubFunctions.h"
-#include "Average.h"
+#include <Average.h>
 #include "SendData.h"
 #include "Audio.h"
 
@@ -29,7 +29,6 @@
  * * IDE Notes
  * 1) For STM32 copy lib from http://www.stm32duino.com/viewtopic.php?t=6 to 
  *    the stm32 harware lib folder (also correct the .\ error)
- * 2) https://github.com/winlinvip/SimpleDHT/releases
  * 3) https://github.com/jrowberg/i2cdevlib
  * 
  */
@@ -63,7 +62,7 @@ float acclOffset=0;
 
 byte gi = 0;
 bool hasrun = false;
-#if defined(DHT)
+#if defined(DHTH)
 byte dhttemperature = 0;
 byte dhthumidity = 0;
 #endif
@@ -84,8 +83,8 @@ MS5611 baro_2(BAROADDR2);
 #endif
 #endif
 
-#if defined(DHT)
-SimpleDHT11 dht11;
+#if defined(DHTH)
+DHT dht;
 #endif
 
 #if defined(ACCL)
@@ -208,6 +207,11 @@ void initSensors() {
   baro_2.begin();
 
 #endif
+
+#if defined (DHTH)
+  dht.setup(DHT_PIN);
+#endif
+
 #if defined(ACCL)
   //Accelerometer - needed for the gy-86 board
   accelgyro.setI2CMasterModeEnabled(false);
@@ -255,12 +259,13 @@ void getSlowSensorData() { //Sensor data not needed every 100ms
   nmea.setGforce(gforce);
 #endif
 
-#if defined (DHT)
-  dht11.read(DHT11_PIN, &dhttemperature, &dhthumidity, NULL);
+#if defined (DHTH)
+  dhttemperature = dht.getTemperature();
+  dhthumidity = dht.getHumidity();
   dhthumidity += DHTOFFSET;
 #endif
 
-#if defined(ACCL) && defined(DHT) // kind of a requirement
+#if defined(ACCL) && defined(DHTH) // kind of a requirement
  //Send C-probe data
  
    nmea.setNmeaPcProbeSentence(float((aax * 1000) / 2048)/1000 , float((aay * 1000) / 2048)/1000, float((aaz * 1000) / 2048)/1000, dhttemperature, dhthumidity, 0);  

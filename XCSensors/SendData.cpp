@@ -1,6 +1,6 @@
 /*
   XCSensors http://XCSensors.org
-  
+
   Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
@@ -17,23 +17,27 @@
 
 
 void sendNmeaDHT() {
-#if defined(DHT)
-  int temp = (dhttemperature + 273.15) * 10;
-  nmea.setNmeaHumidSentence(temp, dhthumidity);
-  sendData(nmea.nmeaHumid);
+#if defined(DHTH)
+  if (conf.xcs) {
+    int temp = (dhttemperature + 273.15) * 10;
+    nmea.setNmeaHumidSentence(temp, dhthumidity);
+    sendData(nmea.nmeaHumid);
+  }
 #endif
 
 }
 
 void sendPcProbe() {
-#if defined(ACCL) && defined(DHT)
+#if defined(ACCL) && defined(DHTH)
   sendData(nmea.nmeaPcProbe);
 #endif
 }
 
 void sendAccelerometor() {
 #if defined(ACCL)
-  sendData(nmea.nmeaGforce);
+  if (conf.xcs) {
+    sendData(nmea.nmeaGforce);
+  }
 #endif
 }
 
@@ -57,7 +61,7 @@ void sendNmeaAll() {
 
 #endif
 
-#if defined(DHT)
+#if defined(DHTH)
   sendNmeaDHT();
 #endif
 
@@ -116,8 +120,8 @@ int getSize(char* ch) {
 
 
 void sendData(char *message) {
-char newl[2] = "\n";
-  
+  char newl[2] = "\n";
+
 #if defined(SERIALOUT)
   if (conf.SerialOut) {
     SERIALOUT.print(message);
@@ -135,15 +139,15 @@ char newl[2] = "\n";
 #if defined(SERIALOUTUSB)
   if (conf.SerialOutUSB) {
     SERIALOUTUSB.print(message);
-    SERIALOUTUSB.print(newl); 
+    SERIALOUTUSB.print(newl);
   }
 #endif
 
 #if defined(SERIALESP)
   if (conf.SerialOutESP) {
-#if defined(ESPAT)  
-    SERIALESP.print(message); 
-    SERIALESP.print(newl);   
+#if defined(ESPAT)
+    SERIALESP.print(message);
+    SERIALESP.print(newl);
 #else
     SERIALESP.print(message);
     SERIALESP.print(newl);
@@ -153,5 +157,5 @@ char newl[2] = "\n";
 
 
 
-}
+  }
 

@@ -7,7 +7,7 @@ Wifi streaming for e-ink readers <br>
 Bluetooth, Serial or USB OTG streaming<br>
 Configuration via Bluetooth, USB or Serial <br>
 Dual pressure sensor support <br>
-Adaptive Vario*
+Adaptive Vario* <br>
 Humidity sensor <br>
 Accelerometer(under development)<br>
 Piezo speaker for vario audio <br>

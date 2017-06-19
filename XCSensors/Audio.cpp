@@ -1,6 +1,6 @@
 /*
   XCSensors http://XCSensors.org
-  
+
   Copyright (c), PrimalCode (http://www.primalcode.org)
 
   This program is free software: you can redistribute it and/or modify
@@ -22,8 +22,8 @@
 bool climbing = false;
 int tm;
 int stime;
-byte toneOn=false;
-byte muted=false;
+byte toneOn = false;
+byte muted = false;
 float variof;
 #endif
 
@@ -41,7 +41,7 @@ float testvario = 0;
 
 
 // Non-Blocking beep beep beep
-void playToneInterval(int freq, int period, int interval) {  
+void playToneInterval(int freq, int period, int interval) {
 
   if (toneOn) {
     int wait = period + interval + tm;
@@ -50,22 +50,20 @@ void playToneInterval(int freq, int period, int interval) {
       toneOn = false;
       noTone(BUZZPIN);
     }
-    
-  }else {
+
+  } else {
     tone(BUZZPIN, freq, period);
-    toneOn =true; 
-    tm=millis();
+    toneOn = true;
+    tm = millis();
   }
-  
+
 }
 
 
 void makeVarioAudio(float vario) {
   int pulse;
   float varioorg = vario;
-  if (takeoff) {
-    vario += BUZZERVARIOGRPAD;
-  }
+
 #if defined(TESTBUZZER)
   vario = testvario;
   int tpassed = millis() - btime;
@@ -80,13 +78,13 @@ void makeVarioAudio(float vario) {
 
   Serial.println(vario);
 #endif
-  
+
   if (vario > 9) {
     vario = 9;
 
   }
 
-  #if defined(SOARDETECTION) && !defined(TESTBUZZER)
+#if defined(SOARDETECTION) && !defined(TESTBUZZER)
 
   if (varioorg > -0.2 && varioorg < 0.2) {
     int diffe = millis() - stime;
@@ -100,22 +98,33 @@ void makeVarioAudio(float vario) {
 
 #endif
 
+  if (takeoff) {
+    //vario += BUZZERVARIOGRPAD;
+
+    if (vario <= 0 && vario >= -0.3) {
+      if (!muted) {
+        playToneInterval(variof, 50, 400);
+      }
+
+    }
+  }
+
   float variofa = (float(fabs(vario)) * 200 ) + 800;
   variof = (10 * variof + variofa) / 11 ;
 
   if (vario >= double(conf.varioAudioDeadBand) / 1000) {
     pulse = TOPPULSE / (vario * 10) + 100;
-    if(!muted) {
-      playToneInterval(variof, pulse, pulse/2);
+    if (!muted) {
+      playToneInterval(variof, pulse, pulse / 2);
     }
-    climbing=true;
+    climbing = true;
   } else {
-      if (climbing ) { //dropped out of the thermal       
-        tone(BUZZPIN, 100, OUTOFTHERMALBUZZT);
-        climbing = false;
-      }
+    if (climbing ) { //dropped out of the thermal
+      tone(BUZZPIN, 100, OUTOFTHERMALBUZZT);
+      climbing = false;
+    }
   }
-  
+
 }
 
 
