@@ -151,11 +151,9 @@ void sendData(char *message) {
 #else
     SERIALESP.print(message);
     SERIALESP.print(newl);
+#endif
   }
 #endif
-#endif
 
-
-
-  }
+}
 

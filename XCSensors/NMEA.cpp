@@ -10,7 +10,7 @@
 */
 #include <Arduino.h>
 #include "NMEA.h"
-#include "Average.h"
+
 
 const char *hex = "0123456789ABCDEF";
 char t_check[3];
@@ -233,13 +233,7 @@ void NMEA::setNmeaPcProbeSentence(float aax, float aay, float aaz, int temperatu
   //    process is likely to affect the readings of the temperature and humidity sensors.
 
   char t_nmeaPcProbe[60] = "$PCPROBE,T,,,,,";
-  //char t_caax[5];
-  //char t_caay[5];
-  //char t_caaz[5];  
- // char t_temp[5];  
-//  char t_humidity[5];
- // char t_Bat[6];
-  //char t_Pressure[7];
+
   char t_comma[2] = ",";
 
   //convert to sentence specs
@@ -249,32 +243,24 @@ void NMEA::setNmeaPcProbeSentence(float aax, float aay, float aaz, int temperatu
 
   int cTemp = temperature * 10;
   int cRh = humidity * 10;
-
   int cBat = batVolt * 1000;
+  
+  strcat(t_nmeaPcProbe, (String(caax,HEX)).c_str());
+  strcat(t_nmeaPcProbe, t_comma);
  
-
-  const char *t_caax = (String(caax,HEX)).c_str(); 
-  strcat(t_nmeaPcProbe, t_caax);
+  strcat(t_nmeaPcProbe, (String(caay,HEX)).c_str());
   strcat(t_nmeaPcProbe, t_comma);
   
-  const char *t_caay = (String(caay,HEX)).c_str();  
-  strcat(t_nmeaPcProbe, t_caay);
-  strcat(t_nmeaPcProbe, t_comma);
-  
-  const char *t_caaz = (String(caaz,HEX)).c_str();  
-  strcat(t_nmeaPcProbe, t_caaz);
+  strcat(t_nmeaPcProbe, (String(caaz,HEX)).c_str());
   strcat(t_nmeaPcProbe, t_comma);
 
-  const char *t_temp = (String(cTemp,HEX)).c_str();
-  strcat(t_nmeaPcProbe, t_temp);
+  strcat(t_nmeaPcProbe, (String(cTemp,HEX)).c_str());
   strcat(t_nmeaPcProbe, t_comma);
 
-  const char *t_humidity = (String(cRh,HEX)).c_str();
-  strcat(t_nmeaPcProbe, t_humidity);
+  strcat(t_nmeaPcProbe, (String(cRh,HEX)).c_str());
   strcat(t_nmeaPcProbe, t_comma);
 
-  const char *t_Bat = (String(cBat,HEX)).c_str();
-  strcat(t_nmeaPcProbe, t_Bat);
+  strcat(t_nmeaPcProbe, (String(cBat,HEX)).c_str());
   strcat(t_nmeaPcProbe, t_comma);
 
   strcat(t_nmeaPcProbe, t_comma); //delta pressure

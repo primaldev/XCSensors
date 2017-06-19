@@ -99,9 +99,9 @@ void makeVarioAudio(float vario) {
 #endif
 
   if (takeoff) {
-    //vario += BUZZERVARIOGRPAD;
+    
 
-    if (vario <= 0 && vario >= -0.3) {
+    if (vario <= 0 && vario >= BUZZERZEROCLIMB) {
       if (!muted) {
         playToneInterval(variof, 50, 400);
       }

@@ -17,8 +17,8 @@
 //There can be only one
 //Don't forget to change Arduino Settings when changing boards
 
-#define STM32F
-//#define TEENSY
+//#define STM32F
+#define TEENSY
 
 /////////////////////////////
 // Config Type
@@ -48,7 +48,7 @@
 //#define GPSSERIALEVENT serialEvent2 //use SerialEvent(). Carefull as this might interupt other nmea sentences
 
 #define TAKEOFFVARIO 0.8 //0.4 //abs vario level to detect takeoff
-#define BUZZERVARIOGRPAD 0.4 // Normal sink rate for glider is -0.9 m/s. By adding this value, the buzzer will sound at "lower" sink rate. 
+#define BUZZERZEROCLIMB -0.3 // Normal sink rate for glider is -0.9 m/s. At this value up to 0 m/s a "blip" sound is made
 #define BUZZERVARIOSTOP 30000 //time vario STOP making noise when climbrate 0 m/s 
 //#define TESTBUZZER  //simulate the vario sound for testing only
 #define BUZZERCYCLE 100 //buzzer causes delays so it is only triggerd every n'th cycle. Value depens on cpu clock. 
@@ -247,8 +247,8 @@
 
 #if defined(KOBO_BT)
 #define CONFIGOPT //enable configuration option (EEPROM required)
-#define I2CEEPROM 0x50 //External I2C EEPROM
-#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
+//#define I2CEEPROM 0x50 //External I2C EEPROM
+//#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
 
 #define LEDPIN 13
 
@@ -286,7 +286,7 @@
 //#define WIFISSID "XCSensors01" // change this
 //#define WIFIPASSWORD "thereisnospoon"
 
-#define DHT(uint8_t pin, uint8_t type, uint8_t count=6);
+#define DHTH;
 #define DHT_PIN 17
 #define DHTOFFSET 50 //calibrate sensor
 
@@ -318,10 +318,10 @@
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
 #define CONFIGOPT //enable configuration option (EEPROM required)
-#define I2CEEPROM 0x50 //External I2C EEPROM
-#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
+//#define I2CEEPROM 0x50 //External I2C EEPROM
+//#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
 
-#define SERIAL_CONFIG Serial1 //the serial port for remote config options
+#define SERIAL_CONFIG Serial //the serial port for remote config options
 //#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port
 #define LEDPIN 13
 
@@ -355,7 +355,7 @@
 #define WIFISSID "XCSensors" // change this 
 #define WIFIPASSWORD "thereisnospoon"
 
-#define DHT(uint8_t pin, uint8_t type, uint8_t count=6);
+#define DHTH 
 #define DHT_PIN 17
 #define DHTOFFSET 30 //calibrate sensor
 
