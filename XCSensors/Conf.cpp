@@ -25,8 +25,8 @@ int eeAddress = 0;
 void getConfig() { //load default config values from EEPROM
 
   getConfigFromEEPROM();
-  if (!conf.hasSavedtoEEPROM) {
-    conf.hasSavedtoEEPROM = true;
+  if (conf.eepromSaveVersion!= EEPROMPVERSION) {
+    conf.eepromSaveVersion = EEPROMPVERSION;
     setDefaultConfig();
     getConfigFromEEPROM();
 

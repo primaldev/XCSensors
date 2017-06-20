@@ -42,7 +42,7 @@ const int C_advMaxSmooth=18;
 const int C_gliderSinkRate=19;
 
 typedef struct {
-  byte hasSavedtoEEPROM;
+  int eepromSaveVersion;
   double qnePressure;
   int sinkAlarmLevel;
   byte SerialOut; 

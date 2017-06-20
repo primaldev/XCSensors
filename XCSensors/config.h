@@ -25,16 +25,17 @@
 ////////////////////////////
 //Switch between different configurations
 
-#define WIFIBOX_BT //Wifi box configuration
-//#define KOBO_BT //Kobo intergrated with extra Bluetooth module
+//#define WIFIBOX_BT //Wifi box configuration
+#define KOBO_BT //Kobo intergrated with extra Bluetooth module
 
 ///////////////////////////
 // Developer Options
 ///////////////////////////
 
-#define DEBUG
-#define DEBUGSERIAL Serial
+//#define DEBUG
+//#define DEBUGSERIAL Serial
 //#define EEPROMDEVMODE //For developement. will reset the eeprom on every startup
+#define EEPROMPVERSION 2  //If the eeprom needs to be resetted for a new release version, increment this value
 
 ///////////////////////////
 // General Options
