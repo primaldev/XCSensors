@@ -63,7 +63,6 @@
    It does it by detecting "triggers".
 */
 #define ADAPTIVEVARIO //Adapts the vario low pass filter 
-#define ADVLOWTRIGGER 0.1 //0.2 // level at witch low trigger are checked
 
 #define ACCLREADMS 100 //how often to read the accelerom
 #define ACCLSMOOTH 10 //Lowpass filter level

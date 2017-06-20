@@ -21,6 +21,7 @@
 #if defined(BUZZER)
 bool climbing = false;
 int tm;
+int rm;
 int stime;
 byte toneOn = false;
 byte muted = false;
@@ -38,6 +39,35 @@ float testvario = 0;
 #define BASEPULSE 200
 #define TOPPULSE  1000
 
+
+
+// Non-Blocking beep blob beep
+void playTwoToneInterval(int freq,int freq2, int period, int intervald) {
+ 
+  
+  if (toneOn) {
+    int wait = period + tm;
+    
+    
+    if ( wait < millis()) {
+      toneOn = false;
+      noTone(BUZZPIN);
+      tone(BUZZPIN, freq2, intervald);
+      rm = millis();
+    }
+
+  } else {
+    int ndwait = intervald + rm;
+     
+    if(ndwait < millis()) {
+    
+    tone(BUZZPIN, freq, period);
+    toneOn = true;
+    tm = millis();
+    }
+  }
+
+}
 
 
 // Non-Blocking beep beep beep
@@ -88,7 +118,7 @@ void makeVarioAudio(float vario) {
 
   if (varioorg > -0.2 && varioorg < 0.2) {
     int diffe = millis() - stime;
-    if (diffe >  SOARDETECTION) {
+    if (diffe >  int(conf.SoarDeadBandTime)) {
       muted = true;
     }
   } else {
@@ -98,21 +128,24 @@ void makeVarioAudio(float vario) {
 
 #endif
 
-  if (takeoff) {
-    
-
     if (vario <= 0 && vario >= BUZZERZEROCLIMB) {
       if (!muted) {
-        playToneInterval(variof, 50, 400);
+         playToneInterval(variof, 50, 400);
       }
 
     }
-  }
+    
+   if (vario <= double(conf.sinkAlarmLevel)/1000 ) { //sink alarm
+      if (!muted) {
+         playTwoToneInterval(1400, 1800, 100, 100);
+      }
+
+   }
 
   float variofa = (float(fabs(vario)) * 200 ) + 800;
   variof = (10 * variof + variofa) / 11 ;
 
-  if (vario >= double(conf.varioAudioDeadBand) / 1000) {
+  if (vario > 0) {
     pulse = TOPPULSE / (vario * 10) + 100;
     if (!muted) {
       playToneInterval(variof, pulse, pulse / 2);

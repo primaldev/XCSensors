@@ -52,25 +52,32 @@ void GPSstuff(char c) {                                         // GPSbuffer[] i
 
     memset(GPSbuffer, 0, sizeof(GPSbuffer));
   }
-
 }
-
 
 
 void checkAdaptiveVario(double vario) {
 #if defined(ADAPTIVEVARIO)
-  if (fabs(vario) > ADVLOWTRIGGER && !vTriggerd) { //fabs abs but can handle floats
-    vtime = millis();
-    vTriggerd = true;
+  
+  double triggerLevel = double(conf.advTriggerLevel)/1000;
+  
+  if(takeoff) { //compensate for glider sink
+    vario += -double(conf.gliderSinkRate)/1000;
   }
 
-  int diff = millis() - vtime;
 
-  if (vTriggerd && fabs(vario) < ADVLOWTRIGGER  && diff < conf.advTriggerTime)  { //zero
+  if (fabs(vario) > triggerLevel && !vTriggerd) { //fabs abs but can handle floats
+    vtime = millis();
+    vTriggerd = true;    
+  }
+
+  int diff = millis() - vtime; 
+
+  if (vTriggerd && fabs(vario) < triggerLevel  && diff < int(conf.advTriggerTime))  { //zero
     if (conf.variosmooth <= conf.advMaxSmooth ) {
       conf.variosmooth++;
       vTriggerd = false;
       vtime = millis();
+      
     }
   }
 
@@ -78,10 +85,10 @@ void checkAdaptiveVario(double vario) {
     vTriggerd = false;
   }
 
-  if (fabs(vario) < float(ADVLOWTRIGGER ) && !vTriggerd && diff >  conf.advRelaxTime) {
+  if (fabs(vario) < float(triggerLevel) && !vTriggerd && diff >  conf.advRelaxTime) {
     if (conf.variosmooth > conf.advMinSmooth ) {
       conf.variosmooth--;
-      vtime = millis();
+      vtime = millis();      
     }
   }
 

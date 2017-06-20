@@ -143,9 +143,6 @@ void collectNmea10() { //runs every 100ms
 
   checkAdaptiveVario(vario);
 
-  if (fabs(vario) > 0 && fabs(vario) < conf.varioDeadBand / 1000) {
-    vario = 0;
-  }
 
   previousAltitude = realAltitude;
 #endif
@@ -319,7 +316,7 @@ void readVarioPressure() {
 #endif
 #endif
 
-  realPressureAv = (conf.variosmooth * realPressureAv + pressure) / (conf.variosmooth + 1);
+  realPressureAv = (double(conf.variosmooth) * realPressureAv + pressure) / (double(conf.variosmooth) + 1);
 
 #endif
 

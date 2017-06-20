@@ -62,8 +62,8 @@ void getDefaultConfig() {
   //QNH value to calculate vario Altitude
   conf.qnePressure = 101325;
 
-  // X 1000 levels lower than this = 0. (ignored by ptas1)
-  conf.varioDeadBand = 100;
+  // X 1000 Level to sound sink alarm
+  conf.sinkAlarmLevel = -3000;
 
   //send data via serial port
   conf.SerialOut = true;
@@ -95,12 +95,12 @@ void getDefaultConfig() {
 
   // turn vario audio on or off
   conf.buzzer = true;
+ 
+  //X 1000 Time Delay when speaker is muted during soar detection
+  conf.SoarDeadBandTime = 30000; 
 
-  //X 1000
-  conf.varioAudioDeadBand = 100;
-
-  //X 1000 and absolute value
-  conf.varioAudioSinkDeadBand = 3000;
+  //X 1000 Value to detect vario movement (abs value needed)
+  conf.advTriggerLevel = 200;
 
   // if vario level goes lower than advLowTrigger in this time, it will cause a trigger and increase conf.variosmooth.
   conf.advTriggerTime = 1000;
@@ -113,6 +113,9 @@ void getDefaultConfig() {
 
   // highest level for conf.variosmooth
   conf.advMaxSmooth = 30;
+
+  // x1000 Glider sink rate
+  conf.gliderSinkRate = -900;
 }
 
 #if defined (SERIAL_CONFIG)
@@ -127,19 +130,20 @@ void printaf(int n) {
     case C_SerialOutESP: SERIAL_CONFIG.print(C_SerialOutESP); SERIAL_CONFIG.print(F(") Enable Wifi: ")); break;
     case C_SerialOutUSB: SERIAL_CONFIG.print(C_SerialOutUSB); SERIAL_CONFIG.print(F(") Enable serial USB OTG: ")); break;
     case C_qnePressure: SERIAL_CONFIG.print(C_qnePressure); SERIAL_CONFIG.print(F(") QNE Pressure: ")); break;
-    case C_varioDeadBand: SERIAL_CONFIG.print(C_varioDeadBand); SERIAL_CONFIG.print(F(") Vario deadband (x1000): ")); break;
+    case C_sinkAlarmLevel: SERIAL_CONFIG.print(C_sinkAlarmLevel); SERIAL_CONFIG.print(F(") Sink Alarm (x1000): ")); break;
     case C_ptas1: SERIAL_CONFIG.print(C_ptas1); SERIAL_CONFIG.print(F(") Send PTAS: ")); break;
     case C_lxnav: SERIAL_CONFIG.print(C_lxnav); SERIAL_CONFIG.print(F(") Send LXNAV: ")); break;
     case C_pcprobe: SERIAL_CONFIG.print(C_pcprobe); SERIAL_CONFIG.print(F(") Send PCPROBE: ")); break;
     case C_xcs: SERIAL_CONFIG.print(C_xcs); SERIAL_CONFIG.print(F(") Send XCS: ")); break;
     case C_variosmooth: SERIAL_CONFIG.print(C_variosmooth); SERIAL_CONFIG.print(F(") Vario smoothness level: ")); break;
     case C_buzzer: SERIAL_CONFIG.print(C_buzzer); SERIAL_CONFIG.print(F(") Enable Vario Audio: ")); break;
-    case C_varioAudioDeadBand: SERIAL_CONFIG.print(C_varioAudioDeadBand); SERIAL_CONFIG.print(F(") Vario Audio asc deadband x1000: ")); break;
-    case C_varioAudioSinkDeadBand: SERIAL_CONFIG.print(C_varioAudioSinkDeadBand); SERIAL_CONFIG.print(F(") Vario audio sink deadband x1000: ")); break;
-    case C_advTriggerTime: SERIAL_CONFIG.print(C_advTriggerTime); SERIAL_CONFIG.print(F(") Adaptive vario trigger time: ")); break;
-    case C_advRelaxTime: SERIAL_CONFIG.print(C_advRelaxTime); SERIAL_CONFIG.print(F(") Adaptive vario relax time: ")); break;
-    case C_advMinSmooth: SERIAL_CONFIG.print(C_advMinSmooth); SERIAL_CONFIG.print(F(") Adaptive vario minimum smooth level: ")); break;
-    case C_advMaxSmooth: SERIAL_CONFIG.print(C_advMaxSmooth); SERIAL_CONFIG.print(F(") Adaptive vario maximum smooth level: ")); break;
+    case C_SoarDeadBandTime: SERIAL_CONFIG.print(C_SoarDeadBandTime); SERIAL_CONFIG.print(F(")Soar detection time (x1000): ")); break;
+    case C_advTriggerLevel: SERIAL_CONFIG.print(C_advTriggerLevel); SERIAL_CONFIG.print(F(") Adaptive vario trigger level (x1000): ")); break;
+    case C_advTriggerTime: SERIAL_CONFIG.print(C_advTriggerTime); SERIAL_CONFIG.print(F(") Adaptive vario trigger time (ms): ")); break;
+    case C_advRelaxTime: SERIAL_CONFIG.print(C_advRelaxTime); SERIAL_CONFIG.print(F(") Adaptive vario relax time (ms): ")); break;
+    case C_advMinSmooth: SERIAL_CONFIG.print(C_advMinSmooth); SERIAL_CONFIG.print(F(") Adaptive vario minimum smooth level (ms): ")); break;
+    case C_advMaxSmooth: SERIAL_CONFIG.print(C_advMaxSmooth); SERIAL_CONFIG.print(F(") Adaptive vario maximum smooth level (ms): ")); break;
+    case C_gliderSinkRate: SERIAL_CONFIG.print(C_gliderSinkRate); SERIAL_CONFIG.print(F(") Glider sink rate (x1000): ")); break;
 
   }
 
@@ -211,8 +215,8 @@ void getConfigVars() { // order is not that important
   printaf(C_qnePressure);
   SERIAL_CONFIG.print(String(conf.qnePressure));
   printtf();
-  printaf(C_varioDeadBand);
-  SERIAL_CONFIG.print(conf.varioDeadBand);
+  printaf(C_sinkAlarmLevel);
+  SERIAL_CONFIG.print(conf.sinkAlarmLevel);
   printtf();
   printaf(C_ptas1);
   SERIAL_CONFIG.print(conf.ptas1);
@@ -232,11 +236,11 @@ void getConfigVars() { // order is not that important
   printaf(C_buzzer);
   SERIAL_CONFIG.print(conf.buzzer);
   printtf();
-  printaf(C_varioAudioDeadBand);
-  SERIAL_CONFIG.print(conf.varioAudioDeadBand);
+  printaf(C_SoarDeadBandTime);//TODO: REmove
+  SERIAL_CONFIG.print(conf.SoarDeadBandTime);
   printtf();
-  printaf(C_varioAudioSinkDeadBand);
-  SERIAL_CONFIG.print(conf.varioAudioSinkDeadBand);
+  printaf(C_advTriggerLevel);
+  SERIAL_CONFIG.print(conf.advTriggerLevel);
   printtf();
   printaf(C_advTriggerTime);
   SERIAL_CONFIG.print(conf.advTriggerTime);
@@ -249,6 +253,9 @@ void getConfigVars() { // order is not that important
   printtf();
   printaf(C_advMaxSmooth);
   SERIAL_CONFIG.print(conf.advMaxSmooth);
+  printtf();
+  printaf(C_gliderSinkRate);
+  SERIAL_CONFIG.print(conf.gliderSinkRate);
   printtf();
 
 #if defined(EEPROMDEVMODE)
@@ -336,19 +343,20 @@ void setConf(int varname, char *value) {
     case C_SerialOutESP: conf.SerialOutESP = getBoolFromVal(value); saveConfigToEEPROM(); break;
     case C_SerialOutUSB: conf.SerialOutUSB = getBoolFromVal(value); saveConfigToEEPROM(); break;
     case C_qnePressure: conf.qnePressure = atoi(value); saveConfigToEEPROM(); break;
-    case C_varioDeadBand: conf.varioDeadBand = atoi(value); saveConfigToEEPROM(); break;
+    case C_sinkAlarmLevel: conf.sinkAlarmLevel = atoi(value); saveConfigToEEPROM(); break;
     case C_ptas1: conf.ptas1 = getBoolFromVal(value); saveConfigToEEPROM(); break;
     case C_lxnav: conf.lxnav = getBoolFromVal(value); saveConfigToEEPROM(); break;
     case C_pcprobe: conf.pcprobe = getBoolFromVal(value); saveConfigToEEPROM(); break;
     case C_xcs: conf.xcs = getBoolFromVal(value); saveConfigToEEPROM(); break;
     case C_variosmooth: conf.variosmooth = atoi(value); saveConfigToEEPROM(); break;
     case C_buzzer: conf.buzzer = getBoolFromVal(value); saveConfigToEEPROM(); break;
-    case C_varioAudioDeadBand: conf.varioAudioDeadBand = atoi(value); saveConfigToEEPROM(); break;
-    case C_varioAudioSinkDeadBand: conf.varioAudioSinkDeadBand = atoi(value); saveConfigToEEPROM(); break;
+    case C_SoarDeadBandTime: conf.SoarDeadBandTime = atoi(value); saveConfigToEEPROM(); break;
+    case C_advTriggerLevel: conf.advTriggerLevel = atoi(value); saveConfigToEEPROM(); break;
     case C_advTriggerTime: conf.advTriggerTime = atoi(value); saveConfigToEEPROM(); break;
     case C_advRelaxTime: conf.advRelaxTime = atoi(value); saveConfigToEEPROM(); break;
     case C_advMinSmooth: conf.advMinSmooth = atoi(value); saveConfigToEEPROM(); break;
     case C_advMaxSmooth: conf.advMaxSmooth = atoi(value); saveConfigToEEPROM(); break;
+    case C_gliderSinkRate: conf.gliderSinkRate = atoi(value); saveConfigToEEPROM(); break;
     case 100: saveConfigToEEPROM(); break; //save to eeprom
     case 102: getConfigFromEEPROM(); break; //load from eeprom
     case 106: resetACCLcompVal(); break; // quick set the ACCL to 0
