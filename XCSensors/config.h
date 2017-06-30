@@ -17,16 +17,16 @@
 //There can be only one
 //Don't forget to change Arduino Settings when changing boards
 
-//#define STM32F
-#define TEENSY
+#define STM32F
+//#define TEENSY
 
 /////////////////////////////
 // Config Type
 ////////////////////////////
 //Switch between different configurations
 
-//#define WIFIBOX_BT //Wifi box configuration
-#define KOBO_BT //Kobo intergrated with extra Bluetooth module
+#define WIFIBOX_BT //Wifi box configuration
+//#define KOBO_BT //Kobo intergrated with extra Bluetooth module
 
 ///////////////////////////
 // Developer Options
@@ -51,7 +51,7 @@
 #define TAKEOFFVARIO 0.8 //0.4 //abs vario level to detect takeoff
 #define BUZZERZEROCLIMB -0.3 // Normal sink rate for glider is -0.9 m/s. At this value up to 0 m/s a "blip" sound is made
 #define BUZZERVARIOSTOP 30000 //time vario STOP making noise when climbrate 0 m/s 
-//#define TESTBUZZER  //simulate the vario sound for testing only
+//#define TESTBUZZER  //simulate the vario sound for testing only (Carefull, you might go mad)
 #define BUZZERCYCLE 100 //buzzer causes delays so it is only triggerd every n'th cycle. Value depens on cpu clock. 
 #define OUTOFTHERMALBUZZT 3000 //time buzzer goes buuhhhhh
 
@@ -94,9 +94,9 @@
 /////////////////////////////////////////////////////////////////////
 
 #if defined(KOBO_BT)
-#define CONFIGOPT //enable configuration option (EEPROM required)
-#define I2CEEPROM 0x50 ////External I2C EEPROM, required if using  CONFIGOPT on STM32F
-#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512k. 64 for 256k
+//#define CONFIGOPT //enable configuration option (EEPROM required)
+//#define I2CEEPROM 0x50 ////External I2C EEPROM, required if using  CONFIGOPT on STM32F
+//#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512k. 64 for 256k
 
 #define LEDPIN PC13
 #define SERIAL_CONFIG Serial3 //the serial port for remote config options

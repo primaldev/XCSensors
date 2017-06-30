@@ -142,7 +142,8 @@ void makeVarioAudio(float vario) {
 
    }
 
-  float variofa = (float(fabs(vario)) * 200 ) + 800;
+ // float variofa = (float(fabs(vario)) * 200 ) + 800;
+ float variofa = (float(fabs(vario)) * 200 ) + 900;
   variof = (10 * variof + variofa) / 11 ;
 
   if (vario > 0) {

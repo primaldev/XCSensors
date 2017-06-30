@@ -292,8 +292,7 @@ void getConfigFromEEPROM() {
 
     if (readgood) {
       memcpy(&conf, PageRead, s);
-      if (conf.hasSavedtoEEPROM) {
-      }
+    
     } else {
       setDefaultConfig();
     }

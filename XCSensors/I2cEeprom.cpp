@@ -48,44 +48,55 @@ void i2c_eeprom_read_page( int deviceaddress, unsigned int eeaddress, byte *buff
 }
 
 /* TODO: Make this readable to normal humans  (or just some proper grammar)
- *  Data to the EEPROM is written sequentially from a starting address. 
- * The length of the written data will be unknown to the program trying to read it.
- * To keep track, 3 bytes plus a check flag stores the lenght of the data.
- *  Hex A will be the first value followed by 3 bytes. 
- * The location of the storage depends on the program.
- * 0-1023 will be reserved for configuration data 
- * 1024 - 10239 for program future fumctions (10k)
- * 10240 - max for logging. logging will be devided in blocks of
- * 256 bytes (or more, to be determed)
- */
+    Data to the EEPROM is written sequentially from a starting address.
+   The length of the written data will be unknown to the program trying to read it.
+   To keep track, 8 bytes stores info of the data.
+   1st 3 bytes will be the eeprom struct version
+   2nd 2 bytes the lengt of data data batch
+   last 2 bytes a checksum. TODO: implement this
+   0-1023 will be reserved for configuration data
+   1024 - 10239 for program future fumctions (10k)
+   10240 - max for logging. logging will be devided in blocks of
+   256 bytes (or more, to be determed)
+*/
 //Writes the given size
 void writeSizeValue(int point, int sizeValue) {
-  byte bSize[4];
-  bSize[0] = 0x0A;
-  bSize[1] = (sizeValue >> 16) & 0xFF;
-  bSize[2] = (sizeValue >> 8) & 0xFF;
-  bSize[3] = sizeValue & 0xFF;
+  byte bSize[8];
+  bSize[0] = (EEPROMPVERSION >> 16) & 0xFF;
+  bSize[1] = (EEPROMPVERSION >> 8) & 0xFF;
+  bSize[2] = EEPROMPVERSION & 0xFF;
+  bSize[3] = (sizeValue >> 16) & 0xFF;
+  bSize[4] = (sizeValue >> 8) & 0xFF;
+  bSize[5] = sizeValue & 0xFF;
+  bSize[6] = 0x0A;
+  bSize[7] = 0x0A;
 
-  i2c_eeprom_write_page(I2CEEPROM, point, bSize, 4);
+  i2c_eeprom_write_page(I2CEEPROM, point, bSize, 8);
 }
+
 
 /*
    Get stored size of page at given point
 */
 int readSizeValue(int point) {
-  byte bSize[4];
-  i2c_eeprom_read_page(I2CEEPROM, point, bSize, 4);
+  byte bSize[8];
+  i2c_eeprom_read_page(I2CEEPROM, point, bSize, 8);
 
-  
+
   int val = 0;
-  if ( bSize[0] == 0x0A) {  
-  val += bSize[1] << 16;
-  val += bSize[2] << 8;
-  val += bSize[3];
+  val += bSize[0] << 16;
+  val += bSize[1] << 8;
+  val += bSize[2];
+  val = 0;
+  if ( val == EEPROMPVERSION) {
+    
+    val += bSize[3] << 16;
+    val += bSize[4] << 8;
+    val += bSize[5];
   }
-  
+
   return val;
-  
+
 }
 
 
@@ -168,15 +179,15 @@ bool readI2CBin(const uint8_t id, uint16_t adr, byte *data, const uint16_t len, 
     Wire.write((uint8_t)highByte(adr));
     Wire.write((uint8_t)lowByte(adr));
     uint8_t err = Wire.endTransmission();
-    Wire.requestFrom((uint8_t)id,i);
+    Wire.requestFrom((uint8_t)id, i);
     bk = bk - i;
     adr = (adr) + i;
 
-    while (i > 0) {     
+    while (i > 0) {
       if (Wire.available()) data[j++] = Wire.read();
       i--;
     }
-    
+
     if (err != 0) {
       abort = true;
       break;
