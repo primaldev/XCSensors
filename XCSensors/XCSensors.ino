@@ -66,6 +66,10 @@ bool hasrun = false;
 byte dhttemperature = 0;
 byte dhthumidity = 0;
 #endif
+
+#if defined(LOWDATADEVIDER)
+byte lowdevcounter=0;
+#endif
 //----------------------------------------------------------------------------//
 // Class Loaders
 //----------------------------------------------------------------------------//
@@ -134,9 +138,18 @@ void collectNmea10() { //runs every 100ms
 
   
   // Direct call to send ptas1, without deadband
-  if (conf.ptas1) {     
-    nmea.setPTAS1(vario, varioAv, realAltitude);  
-    sendPTAS1();
+  if (conf.ptas1) { 
+    nmea.setPTAS1(vario, varioAv, realAltitude); 
+    #if defined(LOWDATADEVIDER) 
+      if ( lowdevcounter>= LOWDATADEVIDER) {
+        sendPTAS1();
+        lowdevcounter=0;
+      }
+      lowdevcounter++;
+    #else   
+     
+      sendPTAS1();
+    #endif
   }   
 
   
@@ -179,7 +192,7 @@ void collectNmea10() { //runs every 100ms
 
 void readACCLSensor() {
 #if defined(ACCL)
-  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);  
 #endif
 }
 
@@ -322,6 +335,7 @@ void readVarioPressure() {
 
 //also fire the buzzer
 #if defined(BUZZER)
+
     if (takeoff) { 
         makeVarioAudio(vario);
      }
@@ -366,6 +380,7 @@ void setup() {
 #if defined(GPS)
   SERIALGPS.begin(SERIALGPSBAUD); //for the gps
 #endif
+
   Wire.begin();
 
 
@@ -397,6 +412,8 @@ void setup() {
 #else
   getDefaultConfig();
 #endif
+
+  
   initSensors();
 
 #if defined(ESPAT)
@@ -466,7 +483,7 @@ void loop() {
     readACCL.check();
 #endif
 
-#if defined(TAKEOFFVARIO)
+#if defined(TAKEOFFVARIO) && !defined(TESTBUZZER)
     if ( startTime > STARTDELAY + 4000 && !takeoff) {
       if (fabs(vario) > TAKEOFFVARIO) {
         takeoff = true;

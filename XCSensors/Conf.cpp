@@ -63,20 +63,20 @@ void getDefaultConfig() {
   conf.qnePressure = 101325;
 
   // X 1000 Level to sound sink alarm
-  conf.sinkAlarmLevel = -3000;
+  conf.sinkAlarmLevel = -5000;
 
   //send data via serial port
   conf.SerialOut = true;
 
   //send data via bluetooth. BT uses alot of power if not linked. Better to disable if not used.
   //BT will be available during startup, if the config menu is used, it will not be disabled.
-  conf.SerialOutBT = false;
+  conf.SerialOutBT = true;
 
   //send data via attached ESP
   conf.SerialOutESP = false;
 
   // send data via USB for OTG
-  conf.SerialOutUSB = false;
+  conf.SerialOutUSB = true;
 
   // send ptas1 nmea, uses the gps channel (once every 100ms)
   conf.ptas1 = true;

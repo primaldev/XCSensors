@@ -9,6 +9,9 @@
   any later version. see <http://www.gnu.org/licenses/>
 */
 
+//Notes:
+// LK8000 on Kobo choose the LX driver. Other drivers seems buggy/slow
+
 
 /////////////////////////////
 // MCU type
@@ -17,16 +20,16 @@
 //There can be only one
 //Don't forget to change Arduino Settings when changing boards
 
-#define STM32F
-//#define TEENSY
+//#define STM32F
+#define TEENSY
 
 /////////////////////////////
 // Config Type
 ////////////////////////////
 //Switch between different configurations
 
-#define WIFIBOX_BT //Wifi box configuration
-//#define KOBO_BT //Kobo intergrated with extra Bluetooth module
+//#define WIFIBOX_BT //Wifi box configuration
+#define KOBO_BT //Kobo intergrated with extra Bluetooth module
 
 ///////////////////////////
 // Developer Options
@@ -35,10 +38,11 @@
 //#define DEBUG
 //#define DEBUGSERIAL Serial
 //#define EEPROMDEVMODE //For developement. will reset the eeprom on every startup
-#define EEPROMPVERSION 2  //If the eeprom needs to be resetted for a new release version, increment this value
+#define EEPROMPVERSION 3  //If the eeprom needs to be resetted for a new release version, increment this value
 
 ///////////////////////////
-// General Options
+// Global Options 
+// Should be added to config menu
 ///////////////////////////
 
 #define STARTDELAY 8000 //the time delay before the process starts
@@ -50,9 +54,10 @@
 
 #define TAKEOFFVARIO 0.8 //0.4 //abs vario level to detect takeoff
 #define BUZZERZEROCLIMB -0.3 // Normal sink rate for glider is -0.9 m/s. At this value up to 0 m/s a "blip" sound is made
-#define BUZZERVARIOSTOP 30000 //time vario STOP making noise when climbrate 0 m/s 
+#define BUZZSINKALERT -2 //Alert if sinking harder than normal
+#define BUZZSINKALERTPAUSE 8000 //pause length in between alerts
+#define BUZZERVARIOSTOP 10000 //time vario STOP making noise when climbrate 0 m/s 
 //#define TESTBUZZER  //simulate the vario sound for testing only (Carefull, you might go mad)
-#define BUZZERCYCLE 100 //buzzer causes delays so it is only triggerd every n'th cycle. Value depens on cpu clock. 
 #define OUTOFTHERMALBUZZT 3000 //time buzzer goes buuhhhhh
 
 #define VARIO2LEASTDEV //base dual vario on least deviation
@@ -94,12 +99,12 @@
 /////////////////////////////////////////////////////////////////////
 
 #if defined(KOBO_BT)
-//#define CONFIGOPT //enable configuration option (EEPROM required)
-//#define I2CEEPROM 0x50 ////External I2C EEPROM, required if using  CONFIGOPT on STM32F
-//#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512k. 64 for 256k
+#define CONFIGOPT //enable configuration option (EEPROM required)
+#define I2CEEPROM 0x50 ////External I2C EEPROM, required if using  CONFIGOPT on STM32F
+#define I2CEEPROMPAGE 32 // page size of EEPROM 128 for 512k. 64 for 256k
 
 #define LEDPIN PC13
-#define SERIAL_CONFIG Serial3 //the serial port for remote config options
+#define SERIAL_CONFIG Serial //the serial port for remote config options
 #define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG is not sharing with a SERIALOUT* type port 
 
 //SerialOut means data will be sent from that port. It needs to be set to a harware serial port.
@@ -108,34 +113,39 @@
 #define SERIALOUT Serial1 //Serial1=kobo
 #define SERIALOUT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
 
-//#define SERIALOUTBT Serial3 //Bluetooth without AT commands Serial out
-//#define SERIALOUTBT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
+#define SERIALOUTBT Serial3 
+#define SERIALOUTBT_BAUD 115200 //HM-13 user Serial passthrough to configure. Set terminal to No line ending (no /n /r)
+//set name AT+NAMEXCSensors & AT+NAMBXCSensorsBLE
+//set dualmode AT+DUAL0
+//set role AT+ROLB0  //slave
+//set pin AT+PINE1234
+//set ble pin  AT+PINB000000
+ //set low unconnected AT+PIO11
 
-//#define SERIALOUTUSB  Serial //USB output
+#define SERIALOUTUSB  Serial //USB output
 
 #define SERIALGPS Serial2
 #define GPS
-#define SERIALGPSBAUD 115200
-
+#define SERIALGPSBAUD 9600
 #define VARIO
 #define VARIO2 //if 2nd vario
 
-#define BAROADDR 0x77
-#define BAROADDR2 0x76
+#define BAROADDR 0x76
+#define BAROADDR2 0x77
 
 
 //#define ESPWIFI
 //#define SERIALESP Serial3
 //#define ESPAT  //use AT commands
 //#define SERIALESPBAUD 115200 
-#define WIFIEN_PIN 12 //wifi enable pin 
+//#define WIFIEN_PIN 12 //wifi enable pin 
 
 //#define WIFISSID "XCSensors01" // change this
 //#define WIFIPASSWORD "thereisnospoon"
 
 #define DHTH
-#define DHT_PIN 17
-#define DHTOFFSET 50 //calibrate sensor
+#define DHT_PIN PB1
+#define DHTOFFSET 0 //calibrate sensor
 
 
 #define ACCL
@@ -144,8 +154,8 @@
   if the stop command is sent during startup, it will delay the sleep mode
   until start command.
 */
-#define BTENPIN 2 //pin to enable HC-05
-#define BTSLEEP  //enable sleep mode
+//#define BTENPIN 2 //pin to enable HC-05
+//#define BTSLEEP  //enable sleep mode
 /*Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400)
   AT+UART=38400,1,0 //115200 had problems
   AT+NAME=iXsensors0A
@@ -153,7 +163,7 @@
 */
 
 #define BUZZER //let's go beep
-#define BUZZPIN 16 //board pin 
+#define BUZZPIN PB0 //board pin 
 
 
 #endif
@@ -250,6 +260,9 @@
 //#define I2CEEPROM 0x50 //External I2C EEPROM
 //#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
 
+#define LOWDATADEVIDER 2 //Some devices can't handle high data rates of 10 Hz. Set this as a devide by value
+
+
 #define LEDPIN 13
 
 #define SERIAL_CONFIG Serial3 //the serial port for remote config options
@@ -315,11 +328,14 @@
 
 /////////////////////////////////////////////////////////////////////
 //TEENSY Wifi Box
+//
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
 #define CONFIGOPT //enable configuration option (EEPROM required)
 //#define I2CEEPROM 0x50 //External I2C EEPROM
 //#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
+
+#define LOWDATADEVIDER 2  //Some devices (LK8000 with Kobo) can't handle high data rates of 10 Hz. Set this as a devide by value
 
 #define SERIAL_CONFIG Serial //the serial port for remote config options
 //#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port

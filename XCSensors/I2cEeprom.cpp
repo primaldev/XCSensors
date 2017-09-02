@@ -55,9 +55,11 @@ void i2c_eeprom_read_page( int deviceaddress, unsigned int eeaddress, byte *buff
    2nd 2 bytes the lengt of data data batch
    last 2 bytes a checksum. TODO: implement this
    0-1023 will be reserved for configuration data
-   1024 - 10239 for program future fumctions (10k)
+   1024 - 10239 for program future fumctions
    10240 - max for logging. logging will be devided in blocks of
-   256 bytes (or more, to be determed)
+   256 bytes (or less, to be determed)
+
+   The size given on these chips are bits not Bytes. So a 512 is actually about 64KB
 */
 //Writes the given size
 void writeSizeValue(int point, int sizeValue) {

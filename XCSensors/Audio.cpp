@@ -26,11 +26,14 @@ int stime;
 byte toneOn = false;
 byte muted = false;
 float variof;
+int pause=0;
+byte tcount=0;
+
 #endif
 
 #if defined(TESTBUZZER)
 unsigned long btime = 0;
-float testvario = 0;
+float testvario = -6;
 #endif
 
 
@@ -70,15 +73,21 @@ void playTwoToneInterval(int freq,int freq2, int period, int intervald) {
 }
 
 
+
+
 // Non-Blocking beep beep beep
-void playToneInterval(int freq, int period, int interval) {
+void playToneInterval(int freq, int period, int tinterval) {
 
   if (toneOn) {
-    int wait = period + interval + tm;
+    int wait = period + tinterval + tm;
 
     if ( wait < millis()) {
       toneOn = false;
       noTone(BUZZPIN);
+      tcount++; // count the amount of beeps for playTonePause
+      if (tcount > 1000) { // prevent overflow
+        tcount = 0;
+      }
     }
 
   } else {
@@ -90,23 +99,44 @@ void playToneInterval(int freq, int period, int interval) {
 }
 
 
+// nth beeps then pauze x
+
+void playTonePause(int freq, int nbeeps, int tpause) {
+
+   if (pause < millis()) {
+      
+      if (tcount < nbeeps) {
+        playToneInterval(freq, 500, 200);
+        
+      }else{
+        pause = millis() + tpause;
+        tcount=0;
+
+      }
+      
+    
+   }
+
+  
+}
+
 void makeVarioAudio(float vario) {
   int pulse;
   float varioorg = vario;
-
+ 
 #if defined(TESTBUZZER)
   vario = testvario;
   int tpassed = millis() - btime;
   if (tpassed > 2000) {
-    testvario = testvario + 0.1;
+    testvario = testvario + 0.2;
     btime = millis();
   }
 
   if (testvario > 9 ) {
-    testvario = 0;
+    testvario = -6;
   }
 
-  Serial.println(vario);
+  
 #endif
 
   if (vario > 9) {
@@ -141,6 +171,14 @@ void makeVarioAudio(float vario) {
       }
 
    }
+
+#if defined(BUZZSINKALERT) 
+    if (vario <=  BUZZSINKALERT && vario >= double(conf.sinkAlarmLevel)/1000 ) {
+       playTonePause(300, abs(vario), BUZZSINKALERTPAUSE);
+    }
+  
+#endif
+   
 
  // float variofa = (float(fabs(vario)) * 200 ) + 800;
  float variofa = (float(fabs(vario)) * 200 ) + 900;

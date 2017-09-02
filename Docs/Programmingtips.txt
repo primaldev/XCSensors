@@ -1,0 +1,20 @@
+Arduino Bootloader
+------------------
+
+Download from:  https://github.com/rogerclarkmelbourne/STM32duino-bootloader
+
+Connect USB to serial device:
+
+USB 3.3V to a VCC or 5V to Lipo Bat
+TX to Rx next to BT module (PA10)
+RX to TX next to BT module (PA9)
+GND to any GND
+
+Hold with pin make BOOT-0 high and power on USB to Serial.
+QUICK as possible start the upload of bootloader
+If fail retry with disconnect and reconnect USB.
+
+Command:
+stm32flash -w ./binaries/generic_boot20_pc13.bin  -v -g 0x0 /dev/ttyUSB0
+
+
