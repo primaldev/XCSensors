@@ -1,0 +1,10 @@
+int16_t 16 bit - log id (number) 
+long 32 bit - start time date
+int16_t 16 bit - start alt
+int16_t 16 bit - max alt
+int16_t 16 bit - vario max climb (x10)
+int16_t 16 bit - vario max sink (x10)
+int8_t 8 bit - gforce max (x10)
+long 32 bit - end time
+
+152 bits total
