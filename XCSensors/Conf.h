@@ -10,7 +10,6 @@
 */
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 void getConfig();
 void setConf(int varname, char *value);
 void getConfigFromEEPROM();

@@ -20,8 +20,8 @@
 //There can be only one
 //Don't forget to change Arduino Settings when changing boards
 
-//#define STM32F
-#define TEENSY
+#define STM32F
+//#define TEENSY
 
 /////////////////////////////
 // Config Type
@@ -62,7 +62,7 @@
 
 #define VARIO2LEASTDEV //base dual vario on least deviation
 #define PTASAVERAGE //include vario avarage in ptas sentence (ignored by XCSoar)
-#define VARIOREADMS 20//40 //read vario every n ms. this is handy for the faster processors. Value must be lower than timedNmea10
+#define VARIOREADMS 30//40 //read vario every n ms. To low, it will miss GPS readings. Value must be lower than timedNmea10 
 #define SOARDETECTION 30000 // if climbrate is constant for set milliseconds at 0 m/s the buzzer is muted
 /*
    Adative vario will automatacally adjust the lowpass filter by changing setting conf.variosmooth.
@@ -101,11 +101,12 @@
 #if defined(KOBO_BT)
 #define CONFIGOPT //enable configuration option (EEPROM required)
 #define I2CEEPROM 0x50 ////External I2C EEPROM, required if using  CONFIGOPT on STM32F
-#define I2CEEPROMPAGE 32 // page size of EEPROM 128 for 512k. 64 for 256k
+#define I2CEEPROMPAGE 256 // page size of EEPROM 128 for 512k. 64 for 256k
+
 
 #define LEDPIN PC13
 #define SERIAL_CONFIG Serial //the serial port for remote config options
-#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG is not sharing with a SERIALOUT* type port 
+//#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG is not sharing with a SERIALOUT* type port 
 
 //SerialOut means data will be sent from that port. It needs to be set to a harware serial port.
 //Best practice is only to send out to ports you will actually use.
@@ -113,8 +114,8 @@
 #define SERIALOUT Serial1 //Serial1=kobo
 #define SERIALOUT_BAUD 115200 //38400  //do not use with Serial (USB) it will hang
 
-#define SERIALOUTBT Serial3 
-#define SERIALOUTBT_BAUD 115200 //HM-13 user Serial passthrough to configure. Set terminal to No line ending (no /n /r)
+//#define SERIALOUTBT Serial3 
+//#define SERIALOUTBT_BAUD 115200 //HM-13 user Serial passthrough to configure. Set terminal to No line ending (no /n /r)
 //set name AT+NAMEXCSensors & AT+NAMBXCSensorsBLE
 //set dualmode AT+DUAL0
 //set role AT+ROLB0  //slave
@@ -128,7 +129,7 @@
 #define GPS
 #define SERIALGPSBAUD 9600
 #define VARIO
-#define VARIO2 //if 2nd vario
+//#define VARIO2 //if 2nd vario
 
 #define BAROADDR 0x76
 #define BAROADDR2 0x77
@@ -143,12 +144,12 @@
 //#define WIFISSID "XCSensors01" // change this
 //#define WIFIPASSWORD "thereisnospoon"
 
-#define DHTH
+#define DHTH //ACCL rewuired i.c.w. cprobe
 #define DHT_PIN PB1
 #define DHTOFFSET 0 //calibrate sensor
 
 
-#define ACCL
+#define ACCL  
 
 /* set HC-05 in sleep mode (via BTPINENABLE) after startup
   if the stop command is sent during startup, it will delay the sleep mode
@@ -173,12 +174,11 @@
 /////////////////////////////////////////////////////////////////////
 #if defined(WIFIBOX_BT)
 
+//#define CONFIGOPT //enable configuration option (EEPROM required)
+//#define I2CEEPROM 0x50 ////External I2C EEPROM, required if using CONFIGOPT on STM32F 
+//#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
 
-#define CONFIGOPT //enable configuration option (EEPROM required)
-#define I2CEEPROM 0x50 ////External I2C EEPROM, required if using CONFIGOPT on STM32F 
-#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
-
-#define LEDPIN PB11 // PC13 - blue pill
+#define LEDPIN PC13 // PC13 - blue pill
 
 #define SERIAL_CONFIG Serial //the serial port for remote config options
 #define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port
@@ -190,8 +190,8 @@
 //#define SERIALOUT Serial1
 //#define SERI ALOUT_BAUD 115200  //do not use with Serial (USB) it will hang
 
-#define SERIALOUTBT Serial1 //Bluetooth without AT commands Serial out
-#define SERIALOUTBT_BAUD 115000 //38400  //do not use with Serial (USB) it will hang
+//#define SERIALOUTBT Serial3 //Bluetooth without AT commands Serial out
+//#define SERIALOUTBT_BAUD 115000 //38400  //do not use with Serial (USB) it will hang
 
 #define SERIALOUTUSB  Serial //USB output. Usually no baud rate needed
 
@@ -211,8 +211,8 @@
 //#define SERIALESPBAUD 115200 
 //#define WIFIEN_PIN 12 //wifi enable pin 
 
-#define WIFISSID "XCSensors" // change this 
-#define WIFIPASSWORD "thereisnospoon"
+//#define WIFISSID "XCSensors" // change this 
+//#define WIFIPASSWORD "thereisnospoon"
 
 #define DHTH //Curren lib autodetect sensor
 #define DHT_PIN PB1
@@ -226,8 +226,8 @@
   if the stop command is sent during startup, it will delay the sleep mode
   until start command.
 */
-#define BTENPIN 2 //pin to enable HC-05
-#define BTSLEEP  //enable sleep mode
+//#define BTENPIN 2 //pin to enable HC-05
+//#define BTSLEEP  //enable sleep mode
 /*Program the HC-05/06 via AT commands first (use the ftdi, press the use prog button, program baud is always 38400)
   AT+UART=38400,1,0 //115200 had problems
   AT+NAME=iXsensors0A
@@ -260,7 +260,6 @@
 //#define I2CEEPROM 0x50 //External I2C EEPROM
 //#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
 
-#define LOWDATADEVIDER 2 //Some devices can't handle high data rates of 10 Hz. Set this as a devide by value
 
 
 #define LEDPIN 13
@@ -335,7 +334,7 @@
 //#define I2CEEPROM 0x50 //External I2C EEPROM
 //#define I2CEEPROMPAGE 64 // page size of EEPROM 128 for 512
 
-#define LOWDATADEVIDER 2  //Some devices (LK8000 with Kobo) can't handle high data rates of 10 Hz. Set this as a devide by value
+
 
 #define SERIAL_CONFIG Serial //the serial port for remote config options
 //#define SERIAL_CONFIG_BAUD  115200 //only define if SERIAL_CONFIG uses it's own port

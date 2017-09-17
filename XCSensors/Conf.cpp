@@ -14,7 +14,6 @@
 #include "Conf.h"
 #include "XCSensors.h"
 #include <EEPROM.h>
-#include <SoftwareSerial.h>
 #include "SubFunctions.h"
 #include "I2cEeprom.h"
 

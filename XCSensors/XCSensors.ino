@@ -14,9 +14,9 @@
 #include <Arduino.h>
 #include "XCSensors.h"
 #include <TimedAction.h>
-#include <Wire.h> //1*
+#include <HardWire.h>
 #include <DHT.h>
-#include <MPU6050.h> //3*
+#include <MPU6050.h> //3*  //need to change to DMA or HWire
 #include "config.h"
 #include <MS5611.h>
 #include "Conf.h"
@@ -67,12 +67,11 @@ byte dhttemperature = 0;
 byte dhthumidity = 0;
 #endif
 
-#if defined(LOWDATADEVIDER)
-byte lowdevcounter=0;
-#endif
 //----------------------------------------------------------------------------//
 // Class Loaders
 //----------------------------------------------------------------------------//
+
+HardWire HWire(1, I2C_FAST_MODE); // I2c1
 
 TimedAction timedNmea10 = TimedAction(100, collectNmea10); // 10 times per second
 
@@ -96,9 +95,6 @@ TimedAction readACCL = TimedAction(ACCLREADMS, readACCLSensor); //processor to f
 MPU6050 accelgyro;
 #endif
 
-#if defined(TEENSYDMA)
-DMAChannel dmachannel;
-#endif
 
 //VoltageReference vRef = VoltageReference();
 NMEA nmea;
@@ -140,16 +136,8 @@ void collectNmea10() { //runs every 100ms
   // Direct call to send ptas1, without deadband
   if (conf.ptas1) { 
     nmea.setPTAS1(vario, varioAv, realAltitude); 
-    #if defined(LOWDATADEVIDER) 
-      if ( lowdevcounter>= LOWDATADEVIDER) {
-        sendPTAS1();
-        lowdevcounter=0;
-      }
-      lowdevcounter++;
-    #else   
-     
-      sendPTAS1();
-    #endif
+    sendPTAS1();
+   
   }   
 
   
@@ -175,7 +163,7 @@ void collectNmea10() { //runs every 100ms
 #if !defined(GPSTIMER)
 
   gi++;
-  if (gi > 5) { // 6 samples collected
+  if (gi > 4) { // 5 samples collected
     ledOn();
     getSlowSensorData();
     sendNmeaAll();
@@ -364,9 +352,12 @@ void runOnce() {
 
 
 void setup() {
+  
 #if defined(DEBUG)
   DEBUGSERIAL.println("Setup phase");
 #endif
+  Wire.begin(); 
+
   pinMode(LEDPIN, OUTPUT); //LED
   ledOn();
 #if defined(SERIALOUT_BAUD)
@@ -381,10 +372,7 @@ void setup() {
   SERIALGPS.begin(SERIALGPSBAUD); //for the gps
 #endif
 
-  Wire.begin();
-
-
-
+ 
 #if defined(SERIALESP)
 #if defined(WIFIEN_PIN)
   pinMode(WIFIEN_PIN, OUTPUT);
@@ -465,14 +453,14 @@ void loop() {
 
   if (startwait && runloop) {  //Give the sensors time to warm up
 
-    timedNmea10.check();
-
+    
 #if defined(GPS) && !defined(GPSSERIALEVENT)
     if (SERIALGPS.available()) {
       char inChar = (char)SERIALGPS.read();
       GPSstuff(inChar);
     }
 #endif
+    timedNmea10.check();
 
 #if defined(VARIO)
     readVario.check();
